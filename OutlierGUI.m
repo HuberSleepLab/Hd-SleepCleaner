@@ -189,8 +189,8 @@ handles.plotPSD         = plotPSD;              % Plot of power spectrum
 handles.plotEEG         = plotEEG;              % Plot of EEG
 
 % Channel outlier detection
-[handles.Y handles.topo] = channel_outlier(handles.Y, handles.topo, 8);    
-[handles.Y handles.topo] = movavg_outlier(handles.Y, handles.topo, 8);    
+[handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, 8);    
+[handles.Y handles.topo handles.movavg_outlier] = movavg_outlier(handles.Y, handles.topo, 8);    
 update_main
 
 % Throw handles to figure
@@ -544,7 +544,9 @@ function cb_topo_night( src, event )
     vTopo2 = handles.topo0;
     vTopo2(isnan(handles.Y)) = nan;
     vTopo2 = mean(vTopo2, 2, 'omitnan');   
-    limits = [prctile([vTopo1; vTopo2], 1)  prctile([vTopo1; vTopo2], 99)];
+
+    % Colorbar limits
+    % limits = [prctile([vTopo1; vTopo2], 1)  prctile([vTopo1; vTopo2], 99)];
     limits1 = [prctile([vTopo1], 1)  prctile([vTopo1], 99)];
     limits2 = [prctile([vTopo2], 1)  prctile([vTopo2], 99)];
     
@@ -837,6 +839,11 @@ function cb_del_brushdata( src, event )
         handles.topo(ichan, handles.brushNDX{ichan}) = nan;        
     end    
 
+    % Automatic outlier detection removal
+    handles.Y(handles.channel_outlier) = nan;
+    handles.Y(handles.movavg_outlier)  = nan;
+    
+
     % Update guidata
     update_main(src, event)
 end
@@ -956,14 +963,14 @@ function cb_meanthresh( src, event )
     mythresh = str2num(get(meanthresh_edit, 'String'));
     
     % Automatic outlier detection
-    [handles.Y handles.topo] = channel_outlier(handles.Y, handles.topo, mythresh);    
+    [handles.Y handles.topo, handles.channel_outlier] = channel_outlier(handles.Y0, handles.topo, mythresh);    
     guidata(gcf, handles);      % Update handles    
 
     % Delete prior manually deleted datapoints again
     cb_del_brushdata( src, event )
 end
 
-function [Y topo] = channel_outlier(Y, topo, mythresh)
+function [Y topo isout] = channel_outlier(Y, topo, mythresh)
     % Function to remove outliers per epoch across channels
     isout           = isoutlier(Y, 'mean', 'ThresholdFactor', mythresh);  % Outlier detection          
     Y(isout)        = nan;
@@ -978,18 +985,19 @@ function cb_movavg_outlier( src, event )
     mythresh   = str2num(get(movavg_thresh, 'String'));
     
     % Automatic outlier detection
-    [handles.Y handles.topo] = movavg_outlier(handles.Y, handles.topo, mythresh);    
+    [handles.Y handles.topo, handles.movavg_outlier] = movavg_outlier(handles.Y0, handles.topo, mythresh);    
     guidata(gcf, handles);      % Update handles    
 
     % Delete prior manually deleted datapoints again
     cb_del_brushdata( src, event )
 end
 
-function [Y topo] = movavg_outlier(Y, topo, mythresh)
+function [Y topo isout] = movavg_outlier(Y, topo, mythresh)
     % Function to remove outliers based on moving average
-    isout           = isoutlier(Y', 'movmean', 40, 'ThresholdFactor', mythresh);  % Outlier detection          
-    Y(isout')       = nan;
-    topo(isout')    = nan;        
+    isout           = isoutlier(Y', 'movmean', 40, 'ThresholdFactor', mythresh);  % Outlier detection  
+    isout           = isout';
+    Y(isout)        = nan;
+    topo(isout)     = nan;        
 end
 
 
