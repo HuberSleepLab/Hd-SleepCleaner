@@ -108,15 +108,22 @@ height_low = 0.33;
 height_up  = 0.54;
 width_left = 0.77;
 
+% Turn brush on
+brushf = brush;
+set( brushf, ...
+    'ActionPreCallback', @fixkeypress, ...
+    'enable', 'on' );
+
 % Main plot
 s1 = subplot('Position', [left bottom_up+.12 width_left height_up-.12]);
-p  = plot(X, Y', 'k.:', ...
-     'MarkerSize',  markersize, ...
-     'LineWidth',  linewidth); 
-ylabel('Values (e. g. z-values)');
-xlim_original = get(s1, 'XLim');
-ylim_original = get(s1, 'YLim');
-title('Main plot');    
+p  = plot_main(X, Y)
+% p  = plot(X, Y', 'k.:', ...
+%      'MarkerSize',  markersize, ...
+%      'LineWidth',  linewidth); 
+% ylabel('Values (e. g. z-values)');
+% xlim_original = get(s1, 'XLim');
+% ylim_original = get(s1, 'YLim');
+% title('Main plot');    
 
 % Hypnogram
 if ~isempty(sleep)
@@ -129,6 +136,7 @@ if ~isempty(sleep)
     linkaxes([s1, s2], 'x');
 %     title('Hypnogram');  
     ylabel('Sleep stages');
+    xlim(handles.xlim_original)
 end
 xlabel('Epoch'); 
 
@@ -145,8 +153,9 @@ plotPSD = plot_ps2D(spectrum, ~isnan(Y));
 
 % Prepare EEG
 s5 = subplot('Position', [left bottom_low width_left-0.27 height_low]);
+plotEEG = yline(0, 'HandleVisibility','off');
 xline([0 20], 'k:', 'HandleVisibility','off')
-legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)'); xlim([-20 40]);
+legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)'); xlim([-10 30]);
 title('EEG (brushed epochs)');  
 
 % Prepare topoplot
@@ -154,15 +163,6 @@ s6 = subplot('Position', [left+0.51 bottom_low 0.16 height_low]);
 topoplotGUI(zeros(1, size(Y, 2)), [0 1], []);
 title('Topoplot (brushed epochs)');    
  
-
-% Turn brush on
-% brush on  
-brushf = brush;
-set( brushf, ...
-    'ActionPreCallback', @fixkeypress, ...
-    'enable', 'on' );
-
-
 % Aesthethics
 set(findobj(gcf,'type','axes'), ...
     'FontSize', 10);
@@ -186,6 +186,7 @@ handles.topo            = topo;                 % Topoplot data
 handles.topo0           = topo;                 % Copy of topoplot data
 handles.spectrum        = spectrum;             % Power spectrum
 handles.plotPSD         = plotPSD;              % Plot of power spectrum
+handles.plotEEG         = plotEEG;              % Plot of EEG
 
 % Channel outlier detection
 [handles.Y handles.topo] = channel_outlier(handles.Y, handles.topo, 8);    
@@ -211,7 +212,7 @@ panelbutton_width   = 0.92;
 fontsize_button     = 9;
 
 % Push buttons
-done_button = uicontrol(f, ...
+uicontrol(f, ...
     'Style', 'pushbutton', ...
     'fontsize', 10, ...,
     'string', 'Done', ...
@@ -226,77 +227,90 @@ panel_restorebuttons = uipanel(f, ...
     'units', 'normalized', ...
     'title', 'Figure manipulation', ...    
     'Position', [panel_left 0.78 panel_width 0.16]);
-ph1=0.18; ph0=0.04;
-cb_del_brushdata_button = uicontrol(panel_restorebuttons, ...
+ph1=0.15; ph0=0.04;
+uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Remove epochs [R]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*5 panelbutton_width ph1], ...
     'callback', @cb_del_brushdata);
-cb_restore_brushdata_button = uicontrol(panel_restorebuttons, ...
+uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Restore epochs [F]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
     'callback', @cb_restore_brushdata);
-cb_restore_all_button = uicontrol(panel_restorebuttons, ...
+uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Restore all data', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
     'callback', @cb_restore_all); 
-cb_restore_yaxis = uicontrol(panel_restorebuttons, ...
+uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Restore Y Axis', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
     'callback', @cb_yaxis_restore); 
-cb_restore_yaxis = uicontrol(panel_restorebuttons, ...
+uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Clean spectrum [P]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*1 panelbutton_width ph1], ...
     'callback', @cb_remove_powerspectrum); 
-
+uicontrol(panel_restorebuttons, ...
+    'Style', 'pushbutton', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'Clean EEG [H]', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left ph0 panelbutton_width ph1], ...
+    'callback', @cb_remove_eeg); 
 
 % Plot buttons
-ph1=0.23; ph0=0.04;
+ph1=0.18; ph0=0.04;
 panel_plotbuttons = uipanel(f, ...
     'units', 'normalized', ...
     'title', 'Plots', ...    
     'Position', [panel_left 0.66 panel_width 0.10]);
-cb_plotEEG_button = uicontrol(panel_plotbuttons, ...
+uicontrol(panel_plotbuttons, ...
+    'Style', 'pushbutton', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'EEG all channels [G]', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left ph0+ph1*0 panelbutton_width ph1], ...
+    'callback', @cb_plotEEG_allchans); 
+uicontrol(panel_plotbuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'EEG [T]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*0 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*1 panelbutton_width ph1], ...
     'callback', @cb_plotEEG); 
-cb_topo_brush_button = uicontrol(panel_plotbuttons, ...
+uicontrol(panel_plotbuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Topo (epoch) [Z]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*1 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
     'callback', @cb_topo_brush); 
-cb_topo_night_button = uicontrol(panel_plotbuttons, ...
+uicontrol(panel_plotbuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Topo (night)', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
     'callback', @cb_topo_night); 
-cb_topo_video_button = uicontrol(panel_plotbuttons, ...
+uicontrol(panel_plotbuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Topo (video)', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
     'callback', @cb_topo_video); 
 
 
@@ -304,7 +318,7 @@ cb_topo_video_button = uicontrol(panel_plotbuttons, ...
 % Automatic outlier detection
 panel_channels = uipanel(f, ...
     'units', 'normalized', ...
-    'Position', [panel_left 0.55 panel_width 0.04], ...
+    'Position', [panel_left 0.60 panel_width 0.04], ...
     'title', 'Channel outlier (per epoch)');
 meanthresh_edit = uicontrol(panel_channels, ...
     'Style', 'edit', ...
@@ -314,23 +328,10 @@ meanthresh_edit = uicontrol(panel_channels, ...
     'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
     'callback', @cb_meanthresh);  
 
-% Exclude channels
-panel_channels = uipanel(f, ...
-    'units', 'normalized', ...
-    'Position', [panel_left 0.60 panel_width 0.04], ...
-    'title', 'Exlude/Include channels');
-chanexcl_edit = uicontrol(panel_channels, ...
-    'Style', 'edit', ...
-    'fontsize', fontsize_button, ...,
-    'string', 'Channel ID', ...
-    'units', 'normalized', ...
-    'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
-    'callback', @cb_chanexcl);  
-
 % Moving average
 panel_movavg = uipanel(f, ...
     'units', 'normalized', ...
-    'Position', [panel_left 0.50 panel_width 0.04], ...
+    'Position', [panel_left 0.55 panel_width 0.04], ...
     'title', 'Epoch outlier (per channel)');
 movavg_thresh = uicontrol(panel_movavg, ...
     'Style', 'edit', ...
@@ -340,6 +341,44 @@ movavg_thresh = uicontrol(panel_movavg, ...
     'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
     'callback', @cb_movavg_outlier);  
 
+% Exclude channels
+panel_channels = uipanel(f, ...
+    'units', 'normalized', ...
+    'Position', [panel_left 0.50 panel_width 0.04], ...
+    'title', 'Exlude/Include channels');
+chanexcl_edit = uicontrol(panel_channels, ...
+    'Style', 'edit', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'Channel ID', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
+    'callback', @cb_chanexcl);  
+
+% Plot EEG
+panel_chaneeg = uipanel(f, ...
+    'units', 'normalized', ...
+    'Position', [panel_left 0.45 panel_width 0.04], ...
+    'title', 'Plot EEG of brushed epoch');
+eeg_chans = uicontrol(panel_chaneeg, ...
+    'Style', 'edit', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'Channel IDs', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
+    'callback', @cb_eeg_chans);  
+
+% Main one channel
+panel_chaneeg = uipanel(f, ...
+    'units', 'normalized', ...
+    'Position', [panel_left 0.40 panel_width 0.04], ...
+    'title', 'Main plot for 1 channel');
+main_chans = uicontrol(panel_chaneeg, ...
+    'Style', 'edit', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'Channel ID', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left 0.05 panelbutton_width 0.8], ...
+    'callback', @ch_main_onechan); 
 
 % ********************
 %   Build Functions
@@ -476,7 +515,7 @@ function topoplotGUI(vTopo1, limits, chanstopo)
         'maplimits', limits, ...
         'style', 'map', ...
         'whitebk', 'on', ...
-        'emarker2', {chanstopo,'.','k',26}, ...   
+        'emarker2', {chanstopo,'.','k',16}, ...   
         'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18); title('All values');         
         xlim([-.55 .55]) % To show the whole nose
         ylim([-.55 .6])  % To show the whole ear   
@@ -498,14 +537,20 @@ function cb_topo_night( src, event )
         'Position', [0.3 0.4 0.4 0.25] ...
         ); 
  
-    % Compute values
+    % Original topoplot
     vTopo1 = mean(handles.topo0, 2, 'omitnan');
-    vTopo2 = mean(handles.topo, 2, 'omitnan');
+
+    % Without outliers
+    vTopo2 = handles.topo0;
+    vTopo2(isnan(handles.Y)) = nan;
+    vTopo2 = mean(vTopo2, 2, 'omitnan');   
     limits = [prctile([vTopo1; vTopo2], 1)  prctile([vTopo1; vTopo2], 99)];
+    limits1 = [prctile([vTopo1], 1)  prctile([vTopo1], 99)];
+    limits2 = [prctile([vTopo2], 1)  prctile([vTopo2], 99)];
     
     % Topoplots
-    subplot(121); topoplotGUI(vTopo1, limits, []); title('All values');          
-    subplot(122); topoplotGUI(vTopo2, limits, []); title('Clean values');      
+    subplot(121); topoplotGUI(vTopo1, limits1, []); title('All values');          
+    subplot(122); topoplotGUI(vTopo2, limits2, []); title('Clean values');      
 end
 
 function cb_topo_brush( src, event )
@@ -517,7 +562,7 @@ function cb_topo_brush( src, event )
     chansNDX   = find(cellfun(@isempty, brushNDX) == 0);                % Gather brushed channels
 
     % Compute values
-    vTopo1 = mean(handles.topo(:, [brushNDX{:}]), 2, 'omitnan');
+    vTopo1 = max(handles.topo(:, [brushNDX{:}]), [], 2, 'omitnan');
     limits = [min(vTopo1) max(vTopo1)];
 
     % Black dots
@@ -588,35 +633,124 @@ function cb_plotEEG( src, event )
     % Plot brushed data    
     axes(s5);
     hold off    
+    handles.plotEEG = [];
     for ch = 1:numel(brushNDX)
         epos = brushNDX{ch};
         for epo = epos
-            X    = linspace(-20, 40, 60*handles.srate);
-            XT   = epo * 20 * handles.srate - handles.srate * 40 + 1 : epo * 20 * handles.srate + 20 * handles.srate;
+            X    = linspace(-10, 30, 40*handles.srate);
+            XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
             plot(X, EEG, 'LineWidth', .8, 'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y));
             hold on;
         end
     end
+    handles.plotEEG = s5.Children;
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
     guidata(gcf, handles);     % Update handles       
 end
 
+function cb_plotEEG_allchans( src, event )
+    % Callback:
+    % Plot Brushed Epochs all channels EEG Data
+
+    % Gather brushed data
+    brushVAL  = get(handles.p, 'YData');    
+    brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+    epos      = unique([brushNDX{:}]);
+
+    % Plot brushed data    
+    axes(s5);
+    hold off    
+    handles.plotEEG = [];
+    for ch = 1:size(handles.Y, 1)
+        for epo = epos
+            if ~isnan(handles.Y(ch, epo))
+                X    = linspace(-10, 30, 40*handles.srate);
+                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
+                EEG  = handles.EEG(ch, XT);
+                Y    = brushVAL{ch}(epo);
+                plot(X, EEG, 'LineWidth', .8, 'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y));
+                hold on;
+            end
+        end
+    end
+    handles.plotEEG = s5.Children;
+    xline([0 20], 'k:', 'HandleVisibility','off')
+    legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
+    title('EEG (brushed epochs)')
+    guidata(gcf, handles);     % Update handles       
+end
+
+function cb_eeg_chans( src, event )
+    % Callback:
+    % Plot Brushed EEG Data of specific channels only
+
+    % Gather brushed data
+    brushVAL  = get(handles.p, 'YData');    
+    brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+    epos      = unique([brushNDX{:}]);
+
+    % Channels to plot
+    chans = str2num(get(eeg_chans, 'String'));    
+
+    % Plot brushed data    
+    axes(s5);
+    hold off    
+    handles.plotEEG = [];    
+    for ch = chans
+        for epo = epos
+            X    = linspace(-10, 30, 40*handles.srate);
+            XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
+            EEG  = handles.EEG(ch, XT);
+            Y    = brushVAL{ch}(epo);
+            if ~isnan(Y)
+                handles.plotEEG = plot(X, EEG, 'LineWidth', .8, 'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y));
+            end
+            hold on;
+        end
+    end
+    handles.plotEEG = s5.Children;    
+    xline([0 20], 'k:', 'HandleVisibility','off')
+    legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
+    title('EEG (brushed epochs)')
+    guidata(gcf, handles);     % Update handles       
+end
+
+function cb_remove_eeg( src, event )
+
+    handles     = guidata(src);                                                  % Grab handles  
+    brushNDX    = cellfun(@find, get(handles.plotEEG, 'BrushData'), 'Uni', 0);   % Gather brushed data
+    lines       = find(~cellfun(@isempty, brushNDX));
+    N           = cellfun(@(x) regexp(x, '\d+', 'match'), get(handles.plotEEG, 'DisplayName'), 'Uni', 0);  
+    % Set brushed data to NaN
+    for line = lines'
+        ch  = str2num(N{line}{1});
+        epo = str2num(N{line}{2});
+        handles.Y(ch, epo) = nan;
+        handles.topo(ch, epo) = nan;  
+    end    
+
+    delete(s5.Children(lines))        
+    handles.plotEEG = s5.Children;    
+
+    % Update guidata
+    update_main(src, event)
+end
 
 
 % *** Plot main data
 
-function p = plot_main(X, Y, p)
+function p = plot_main(X, Y)
     % Main plot in which 
     % you perform manual artifact rejection
 
     % Get current y and x limits
-    axes(s1); hold off;       
+    axes(s1); hold off;      
     xlim_now = get(gca, 'XLim');
-    ylim_now = get(gca, 'YLim');     
+    ylim_now = get(gca, 'YLim');           
    
     % Plot main plot
     p = plot(X, Y', 'k.:', ...
@@ -626,19 +760,24 @@ function p = plot_main(X, Y, p)
         xticklabels({})
     end
     title('Main plot');    
-    ylabel('Values (e. g. z-values)');    
+    ylabel('Values (e. g. z-values)');   
 
     % Restore axis limits if you were in zoom mode
-    if ~all(ismember(xlim_now, xlim_original))
-        % zoom mode
-        xlim(xlim_now)
-        ylim(ylim_now)
-    else
-        % not zoom mode
-        dist = ( max(Y(:)) - min(Y(:)) ) / 25;        
-        ylim( [ min(Y(:))-dist, max(Y(:))+dist ] )   
-        ylim_original = get(s1, 'YLim');        
-    end       
+    try
+        if ~all(ismember(xlim_now, handles.xlim_original))
+            % zoom mode
+            xlim(xlim_now)
+            ylim(ylim_now)
+        else
+            % not zoom mode
+            dist = ( max(Y(:)) - min(Y(:)) ) / 25;        
+            ylim( [ min(Y(:))-dist, max(Y(:))+dist ] )   
+            handles.ylim_original = get(s1, 'YLim');        
+        end     
+    catch
+        handles.xlim_original = get(s1, 'XLim');
+        handles.ylim_original = get(s1, 'YLim');
+    end
     
     % Turn brush on
     set( brushf, ...
@@ -647,6 +786,9 @@ function p = plot_main(X, Y, p)
 
     % Re-enable key press
     fixkeypress; 
+
+    % Update guidata
+    guidata(gcf, handles);      % Update handles     
 end
 
 function po = plot_circles(X, Y0, cleandxnz)
@@ -732,8 +874,8 @@ function cb_yaxis_restore( src, event )
     % restores axis limits
 
     axes(s1)
-    ylim( ylim_original );
-    xlim( xlim_original );
+    ylim( handles.ylim_original );
+    xlim( handles.xlim_original );
 end
 
 function artndxnz = compute_artndxz(Y0, Y)
@@ -786,6 +928,26 @@ end
 
 % *** Outlier detection
 
+function ch_main_onechan( src, event )
+
+    % Grab channel
+    chans     = str2num(get(main_chans, 'String'));
+
+    % Open new figure
+    fmainchan = figure()
+
+    % Values to plot
+    Y1 = handles.Y(chans, :);
+
+    % Plot main plot
+    plot(handles.X, Y1', 'k.:', ...
+        'MarkerSize',  markersize, ...
+        'LineWidth',  linewidth);
+    title('Main plot');    
+    legend(sprintf('Channel %d', chans))
+    ylabel('Values (e. g. z-values)');       
+end
+
 function cb_meanthresh( src, event )
     % Callback:
     % Automatic outlier detection   
@@ -804,8 +966,8 @@ end
 function [Y topo] = channel_outlier(Y, topo, mythresh)
     % Function to remove outliers per epoch across channels
     isout           = isoutlier(Y, 'mean', 'ThresholdFactor', mythresh);  % Outlier detection          
-    Y(isout)       = nan;
-    topo(isout)    = nan;        
+    Y(isout)        = nan;
+    topo(isout)     = nan;        
 end
 
 function cb_movavg_outlier( src, event )
@@ -841,7 +1003,7 @@ function update_main(src, event)
     handles.cleandxnz = compute_cleandxnz(handles.Y0, handles.Y);         % Clean epochs
     
     % Plot and update handles
-    handles.p   = plot_main(handles.X, handles.Y, handles.p);             % Black dots
+    handles.p   = plot_main(handles.X, handles.Y);             % Black dots
     handles.po  = plot_circles(handles.X, handles.Y0, handles.cleandxnz); % Red circles
     
     % Side plots
@@ -902,7 +1064,11 @@ function keyPress(src, event)
         case 'f'
             cb_restore_brushdata( src, event );   
         case 'p'
-            cb_remove_powerspectrum( src, event );               
+            cb_remove_powerspectrum( src, event );  
+        case 'g'
+            cb_plotEEG_allchans( src, event );        
+        case 'h'
+            cb_remove_eeg( src, event );            
     end
 end
 
@@ -918,8 +1084,8 @@ end
 uiwait(f)
 output.cleanVALUES  = handles.Y;           % Only clean input values
 output.artndxnz     = handles.artndxnz;    % Corresponding logical matrix indicating which values died during artifact rejection
-close(handles.f2)
-close(handles.f1)
+% close(handles.f2)
+% close(handles.f1)
 close(f);
 
 
