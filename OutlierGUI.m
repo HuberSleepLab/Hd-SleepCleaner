@@ -765,9 +765,17 @@ end
 function cb_remove_eeg( src, event )
 
     handles     = guidata(src);                                                  % Grab handles  
-    brushNDX    = cellfun(@find, get(handles.plotEEG, 'BrushData'), 'Uni', 0);   % Gather brushed data
-    lines       = find(~cellfun(@isempty, brushNDX));
-    N           = cellfun(@(x) regexp(x, '\d+', 'match'), get(handles.plotEEG, 'DisplayName'), 'Uni', 0);  
+    try 
+        % When >1 channel was plotted it's a cell array
+        brushNDX    = cellfun(@find, get(handles.plotEEG, 'BrushData'), 'Uni', 0);   % Gather brushed data
+        lines       = find(~cellfun(@isempty, brushNDX));
+        N           = cellfun(@(x) regexp(x, '\d+', 'match'), get(handles.plotEEG, 'DisplayName'), 'Uni', 0);          
+    catch
+        % Otherwise it's a vector
+        lines       = 1;
+        N           = {regexp(get(handles.plotEEG, 'DisplayName'), '\d+', 'match')};                  
+    end          
+    
     % Set brushed data to NaN
     for line = lines'
         ch  = str2num(N{line}{1});
