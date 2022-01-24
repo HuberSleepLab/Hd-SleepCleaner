@@ -116,7 +116,7 @@ set( brushf, ...
 
 % Main plot
 s1 = subplot('Position', [left bottom_up+.12 width_left height_up-.12]);
-p  = plot_main(X, Y)
+p  = plot_main(X, Y);
 % p  = plot(X, Y', 'k.:', ...
 %      'MarkerSize',  markersize, ...
 %      'LineWidth',  linewidth); 
@@ -403,7 +403,7 @@ function cb_power_spectrum( src, event )
     % plot power spectrum
 
     handles = guidata(src);                             % Grab handles                  
-    handles.plotPSD = plot_ps2D(handles.spectrum, handles.cleandxnz)      % Plot power spectrum
+    handles.plotPSD = plot_ps2D(handles.spectrum, handles.cleandxnz);     % Plot power spectrum
 end
 
 function plotPSD = plot_ps2D(ps3D, clean2D)
@@ -424,7 +424,7 @@ function plotPSD = plot_ps2D(ps3D, clean2D)
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
-    colororder(s4, rainbow)    
+    colororder(s4, rainbow);   
 end
 
 function ps2D = compute_ps2D(ps3D, clean2D)
@@ -434,7 +434,7 @@ function ps2D = compute_ps2D(ps3D, clean2D)
     clean3D         = clean_3D(clean2D, ps3D);
     ps3D(~clean3D)  = nan;                            % Clean spectrum
     ps2D            = mean(ps3D, 3, 'omitnan');       % Mean over epochs
-    ps2D            = ps2D(:, 1:fmax/fres+1)          % Frequencies 1 to 30
+    ps2D            = ps2D(:, 1:fmax/fres+1);         % Frequencies 1 to 30
 end
 
 function clean3D = clean_3D(clean2D, ps3D)
@@ -470,7 +470,7 @@ function cb_show_powerspectrum( src, event )
     chans       = find(~cellfun(@isempty, brushNDX))';                            % Selected channels
 
     % Highlight channels in main plot
-    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans)     
+    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans);    
 
     % Update guidata
     guidata(gcf, handles);      % Update handles        
@@ -485,7 +485,7 @@ function plot_bar(Y0, artndxnz)
     % all channels on top of each other
 
     % Percentage correct
-    [prc1, prc2] = compute_bar(Y0, artndxnz)    
+    [prc1, prc2] = compute_bar(Y0, artndxnz);   
 
     % Plot bars
     axes(s3);
@@ -522,7 +522,7 @@ function cb_plot_bar( src, event )
     % Barplot (percentage clean epochs)
 
     handles = guidata(src);                    % Grab handles                  
-    plot_bar(handles.Y0, handles.artndxnz)     % Plot bar
+    plot_bar(handles.Y0, handles.artndxnz);    % Plot bar
 end
 
 
@@ -604,8 +604,8 @@ function cb_topo_brush( src, event )
    
     % Topoplot
     axes(s6);
-    cla(s6, 'reset')    
-    topoplotGUI(vTopo1, limits, chanstopo); title('Topoplot (brushed epochs)')          
+    cla(s6, 'reset');   
+    topoplotGUI(vTopo1, limits, chanstopo); title('Topoplot (brushed epochs)');         
 end
 
 function cb_topo_video( src, event )
@@ -637,8 +637,8 @@ function cb_topo_video( src, event )
         if ishandle(fvideo)
             cla            
             topoplotGUI(vTopo, limits, []); title(sprintf('Epo %d', epo)); 
-            drawnow() 
-            pause(0.01)                 
+            drawnow();
+            pause(0.01);                
         else
             fprintf('Closed Topo (video)')
             break
@@ -685,7 +685,7 @@ function cb_plotEEG( src, event )
     handles.plotEEG = s5.Children;
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
-    title('EEG (brushed epochs)') 
+    title('EEG (brushed epochs)');
 
     guidata(gcf, handles);     % Update handles       
 end
@@ -722,7 +722,7 @@ function cb_plotEEG_allchans( src, event )
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
-    colororder(s5, rainbow)   
+    colororder(s5, rainbow);  
 
     guidata(gcf, handles);     % Update handles       
 end
@@ -776,7 +776,7 @@ function cb_remove_eeg( src, event )
         handles.topo(ch, epo) = nan;  
     end    
 
-    delete(s5.Children(lines))        
+    delete(s5.Children(lines));       
     handles.plotEEG = s5.Children;    
 
     % Update guidata
@@ -815,7 +815,7 @@ function p = plot_main(X, Y)
         else
             % not zoom mode
             dist = ( max(Y(:)) - min(Y(:)) ) / 25;        
-            ylim( [ min(Y(:))-dist, max(Y(:))+dist ] )   
+            ylim( [ min(Y(:))-dist, max(Y(:))+dist ] );  
             handles.ylim_original = get(s1, 'YLim');        
         end     
     catch
@@ -830,7 +830,7 @@ function p = plot_main(X, Y)
     % Turn brush on
     set( brushf, ...
         'ActionPreCallback', @fixkeypress, ...
-        'enable', 'on' )     
+        'enable', 'on' );    
 
     % Re-enable key press
     fixkeypress; 
@@ -918,7 +918,7 @@ function cb_restore_all( src, event )
     % Restore data
     handles.Y          = handles.Y0;                    % Restore all data points    
     handles.brushNDX   = cell(size(handles.Y, 1), 1);   % Delete brushed data
-    handles.topo       = handles.topo0                  % Restore topo
+    handles.topo       = handles.topo0;                 % Restore topo
 
     % Update guidata
     update_main(src, event)
@@ -988,7 +988,7 @@ function ch_main_onechan( src, event )
     chans     = str2num(get(main_chans, 'String'));   
 
     % Highlight channels in main plot
-    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans)    
+    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans);   
    
     % Update guidata
     guidata(gcf, handles);      % Update handles       
@@ -1103,7 +1103,7 @@ function update_main(src, event)
     % Plot and update handles
     handles.p   = plot_main(handles.X, handles.Y);             % Black dots
     handles.po  = plot_circles(handles.X, handles.Y0, handles.cleandxnz); % Red circles
-    handles.p   = highlight_chans(handles.X, handles.Y, handles.p, handles.chans_highlighted) % Highlighted channels
+    handles.p   = highlight_chans(handles.X, handles.Y, handles.p, handles.chans_highlighted); % Highlighted channels
     
     % Side plots
     plot_bar(handles.Y0, handles.artndxnz);                              % Barplot
