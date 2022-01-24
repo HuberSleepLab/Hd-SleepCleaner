@@ -187,6 +187,7 @@ handles.topo0           = topo;                 % Copy of topoplot data
 handles.spectrum        = spectrum;             % Power spectrum
 handles.plotPSD         = plotPSD;              % Plot of power spectrum
 handles.plotEEG         = plotEEG;              % Plot of EEG
+handles.chans_highlighted = [];                 % Highlights these channels in main plot
 
 % Channel outlier detection
 [handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, 8);    
@@ -469,7 +470,10 @@ function cb_show_powerspectrum( src, event )
     chans       = find(~cellfun(@isempty, brushNDX))';                            % Selected channels
 
     % Highlight channels in main plot
-    handles.p = highlight_chans(handles.X, handles.Y, handles.p, chans)     
+    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans)     
+
+    % Update guidata
+    guidata(gcf, handles);      % Update handles        
 end
 
 
@@ -984,13 +988,13 @@ function ch_main_onechan( src, event )
     chans     = str2num(get(main_chans, 'String'));   
 
     % Highlight channels in main plot
-    handles.p = highlight_chans(handles.X, handles.Y, handles.p, chans)    
+    [handles.p, handles.chans_highlighted] = highlight_chans(handles.X, handles.Y, handles.p, chans)    
    
     % Update guidata
     guidata(gcf, handles);      % Update handles       
 end
 
-function p = highlight_chans(X, Y, p, chans)
+function [p, chans_legend] = highlight_chans(X, Y, p, chans)
     % Highlights channels in main plot
 
     % Rainbowcolor
@@ -1007,20 +1011,20 @@ function p = highlight_chans(X, Y, p, chans)
             p(chan).DisplayName = sprintf('Channel %d', chan);  
             uistack(p(chan), 'top')
 
-             % Open new figure
-            fmainchan = figure('color', 'w')
-        
-            % Values to plot
-            Y1 = Y(chan, :);
-        
-            % Plot main plot
-            plot(X, Y1', 'k.:', ...
-                'MarkerSize',  markersize, ...
-                'LineWidth',  linewidth);
-            title('Temporary figure (close when done inspecting)');    
-            legend(sprintf('Channel %d', chan))
-            ylabel('Values (e. g. z-values)');   
-            xlabel('Epoch')
+%              % Open new figure
+%             fmainchan = figure('color', 'w')
+%         
+%             % Values to plot
+%             Y1 = Y(chan, :);
+%         
+%             % Plot main plot
+%             plot(X, Y1', 'k.:', ...
+%                 'MarkerSize',  markersize, ...
+%                 'LineWidth',  linewidth);
+%             title('Temporary figure (close when done inspecting)');    
+%             legend(sprintf('Channel %d', chan))
+%             ylabel('Values (e. g. z-values)');   
+%             xlabel('Epoch')
         
         else
             % Turn back to normal            
@@ -1035,8 +1039,10 @@ function p = highlight_chans(X, Y, p, chans)
     end
 
     % Show legend
-    chans_legend = arrayfun(@(x) ~isempty(x.DisplayName), p, 'UniformOutput', 1);
-    legend(s1, p(chans_legend));        
+    chans_legend = find(arrayfun(@(x) ~isempty(x.DisplayName), p, 'UniformOutput', 1))';
+    if ~isempty(chans_legend)
+        legend(s1, p(chans_legend));  
+    end
 end
 
 function cb_meanthresh( src, event )
@@ -1097,6 +1103,7 @@ function update_main(src, event)
     % Plot and update handles
     handles.p   = plot_main(handles.X, handles.Y);             % Black dots
     handles.po  = plot_circles(handles.X, handles.Y0, handles.cleandxnz); % Red circles
+    handles.p   = highlight_chans(handles.X, handles.Y, handles.p, handles.chans_highlighted) % Highlighted channels
     
     % Side plots
     plot_bar(handles.Y0, handles.artndxnz);                              % Barplot
