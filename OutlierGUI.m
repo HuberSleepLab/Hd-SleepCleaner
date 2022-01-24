@@ -402,15 +402,19 @@ function plotPSD = plot_ps2D(ps3D, clean2D)
 
     % Compute power spectrum 
     ps2D = compute_ps2D(ps3D, clean2D);         
-%     ps2D = (ps2D - mean(ps2D, 1)) ./ std(ps2D, [], 1);
+%     ps2D = (ps2D - mean(ps2D, 1)) ./ std(ps2D, [], 1);    
 
     % Plot power spectrum
-    axes(s4)
+    axes(s4);
     plotPSD = plot( 0:fres:fmax, log10(ps2D)', ...
-        'LineWidth', linewidth)
+        'LineWidth', linewidth);
         xlabel('Freq (Hz)'); 
-        ylabel('Log_{PSD}')
-    title('Spectral power (all epochs)');
+        ylabel('Log_{PSD}');
+    title('Spectral power (clean epochs)');
+
+    % Rainbowcolor
+    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    colororder(s4, rainbow)    
 end
 
 function ps2D = compute_ps2D(ps3D, clean2D)
@@ -651,6 +655,11 @@ function cb_plotEEG( src, event )
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
+
+    % Rainbowcolor
+    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    colororder(s5, rainbow)   
+
     guidata(gcf, handles);     % Update handles       
 end
 
@@ -683,6 +692,11 @@ function cb_plotEEG_allchans( src, event )
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
+
+    % Rainbowcolor
+    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    colororder(s5, rainbow)   
+    
     guidata(gcf, handles);     % Update handles       
 end
 
