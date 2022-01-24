@@ -227,46 +227,53 @@ panel_restorebuttons = uipanel(f, ...
     'units', 'normalized', ...
     'title', 'Figure manipulation', ...    
     'Position', [panel_left 0.78 panel_width 0.16]);
-ph1=0.15; ph0=0.04;
+ph1=0.13; ph0=0.04;
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Remove epochs [R]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*5 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*6 panelbutton_width ph1], ...
     'callback', @cb_del_brushdata);
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Restore epochs [F]', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*5 panelbutton_width ph1], ...
     'callback', @cb_restore_brushdata);
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
     'string', 'Restore all data', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
     'callback', @cb_restore_all); 
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Restore Y Axis', ...
+    'string', 'Restore Y-Axis', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*3 panelbutton_width ph1], ...
     'callback', @cb_yaxis_restore); 
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Clean spectrum [P]', ...
+    'string', 'Remove chans (Spectrum)', ...
     'units', 'normalized', ...
-    'position', [panelbutton_left ph0+ph1*1 panelbutton_width ph1], ...
+    'position', [panelbutton_left ph0+ph1*2 panelbutton_width ph1], ...
     'callback', @cb_remove_powerspectrum); 
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Clean EEG [H]', ...
+    'string', 'Show chans (Spectrum)', ...
+    'units', 'normalized', ...
+    'position', [panelbutton_left ph0+ph1*1 panelbutton_width ph1], ...
+    'callback', @cb_show_powerspectrum); 
+uicontrol(panel_restorebuttons, ...
+    'Style', 'pushbutton', ...
+    'fontsize', fontsize_button, ...,
+    'string', 'Remove chans (EEG) [H]', ...
     'units', 'normalized', ...
     'position', [panelbutton_left ph0 panelbutton_width ph1], ...
     'callback', @cb_remove_eeg); 
@@ -388,6 +395,8 @@ main_chans = uicontrol(panel_chaneeg, ...
 
 % *** Power spectrum
 
+
+
 function cb_power_spectrum( src, event )
     % Button callback: 
     % plot power spectrum
@@ -451,6 +460,18 @@ function cb_remove_powerspectrum( src, event )
     % Update guidata
     update_main(src, event)
 end
+
+function cb_show_powerspectrum( src, event )
+    % Highlight channels selected in power spectrum in main plot
+
+    handles     = guidata(src);                                                  % Grab handles  
+    brushNDX    = cellfun(@find, get(handles.plotPSD, 'BrushData'), 'Uni', 0);   % Gather brushed data
+    chans       = find(~cellfun(@isempty, brushNDX))';                            % Selected channels
+
+    % Highlight channels in main plot
+    handles.p = highlight_chans(handles.X, handles.Y, handles.p, chans)     
+end
+
 
 
 % *** Barplot (percentage clean epochs)
@@ -960,54 +981,62 @@ end
 function ch_main_onechan( src, event )
 
     % Grab channel
-    chans     = str2num(get(main_chans, 'String'));
+    chans     = str2num(get(main_chans, 'String'));   
+
+    % Highlight channels in main plot
+    handles.p = highlight_chans(handles.X, handles.Y, handles.p, chans)    
    
+    % Update guidata
+    guidata(gcf, handles);      % Update handles       
+end
+
+function p = highlight_chans(X, Y, p, chans)
+    % Highlights channels in main plot
+
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
 
     % Highlight channel with a different color in main plot
     for chan = chans
-        if handles.p(chan).Marker == '.';   
+        if p(chan).Marker == '.';   
             % Highlight channel
-            handles.p(chan).MarkerFaceColor = rainbow(chan, :);
-            handles.p(chan).Marker = 's';  
-            % handles.p(chan).MarkerSize = 8;            
-            % handles.p(chan).HandleVisibility = 'on';
-            handles.p(chan).DisplayName = sprintf('Channel %d', chan);   
+            p(chan).MarkerFaceColor = rainbow(chan, :);
+            p(chan).Marker = 's';  
+            p(chan).MarkerSize = 7;            
+            % p(chan).HandleVisibility = 'on';
+            p(chan).DisplayName = sprintf('Channel %d', chan);  
+            uistack(p(chan), 'top')
 
              % Open new figure
             fmainchan = figure('color', 'w')
         
             % Values to plot
-            Y1 = handles.Y(chan, :);
+            Y1 = Y(chan, :);
         
             % Plot main plot
-            plot(handles.X, Y1', 'k.:', ...
+            plot(X, Y1', 'k.:', ...
                 'MarkerSize',  markersize, ...
                 'LineWidth',  linewidth);
-            title('Main plot');    
+            title('Temporary figure (close when done inspecting)');    
             legend(sprintf('Channel %d', chan))
             ylabel('Values (e. g. z-values)');   
             xlabel('Epoch')
         
         else
             % Turn back to normal            
-            handles.p(chan).MarkerFaceColor = 'k';
-            handles.p(chan).Marker = '.';    
-            handles.p(chan).DisplayName = '';               
-            % handles.p(chan).MarkerSize = 8;            
-            % handles.p(chan).HandleVisibility = 'off';            
+            p(chan).MarkerFaceColor = 'k';
+            p(chan).Marker = '.';    
+            p(chan).DisplayName = '';               
+            p(chan).MarkerSize = markersize;            
+            % p(chan).HandleVisibility = 'off';            
         end
     
            
     end
 
     % Show legend
-    chans_legend = arrayfun(@(x) ~isempty(x.DisplayName), handles.p, 'UniformOutput', 1);
-    legend(s1, handles.p(chans_legend));    
-   
-    % Update guidata
-    guidata(gcf, handles);      % Update handles       
+    chans_legend = arrayfun(@(x) ~isempty(x.DisplayName), p, 'UniformOutput', 1);
+    legend(s1, p(chans_legend));        
 end
 
 function cb_meanthresh( src, event )
