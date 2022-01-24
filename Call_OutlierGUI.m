@@ -62,7 +62,7 @@ fprintf('** Load %s\n', fileVIS)
 
 % Previous artndxn
 conf.artndxn.filename = extractBefore(fileFFT, '_FFTtot.mat');
-conf.artndxn.filename = [conf.artndxn.filename, '_artndxnz.mat'];
+conf.artndxn.filename = [conf.artndxn.filename, '_artndxn.mat'];
 
 % Artndxn already exists
 if isstr(fileArt)
@@ -82,7 +82,11 @@ end
 % Load EEG
 if isstr(fileEEG)
     load(fullfile(pathEEG, fileEEG), 'EEG')
-    fprintf('** Load %s\n', fileEEG)        
+    fprintf('** Load %s\n', fileEEG)      
+
+    % Average reference
+    avgref_chans = setdiff(1:128, [49 56 107 113, 125, 126, 127, 128, 48, 119, 43, 63, 68, 73, 81, 88, 94, 99, 120]);
+    EEG.data = EEG.data - mean(EEG.data(avgref_chans, :));            
 else 
     EEG = [];
 end
@@ -133,64 +137,99 @@ if ~isfield(IMP, 'morning')
     IMP.morning = nan(numel(conf.FFTtot.chans), 2);
 end
 
-
-
-% ********************
-%  Prepare variables
-% ********************
-
 % Sleep parameters
 visgood  = find(sum(vistrack') == 0);
 vissleep = find(vissymb=='1' | vissymb=='2' | vissymb=='3' | vissymb=='4')';
 ndxSleep = intersect(visgood,vissleep);
 ndxNREM  =  find(vissymb=='2' | vissymb=='3');
 
+% ********************
+%    EEG deviance
+% ********************
+
+% Z-standardize EEG
+EEGZ = ( EEG.data - mean(EEG.data, 2) ) ./ std(EEG.data, [], 2);
+
+% How much channel deviate from mean
+devEEG = [];
+for epo = 1:floor(EEG.pnts/EEG.srate/20)
+    XT              = epo * 20 * EEG.srate + 1 - 20*EEG.srate : epo * 20 * EEG.srate;         
+%     devEEG(:, epo)  = max(abs(EEGZ(:, XT) - mean(EEGZ(:, XT))), [], 2);
+    devEEG(:, epo)  = max( abs( EEGZ(:, XT) - mean(EEGZ(:, XT)) ).^2, [], 2);
+    
+end
+devEEG(129, :) = [];
+devEEG(:, setdiff( 1:end, ndxSleep ))  = nan;
+
 % Compute SWA
 SWA = FFTtot(:, freq >= 0.75 & freq <= 4.5, :);
 SWA = squeeze(mean(SWA, 2));
 SWAZ = ( SWA - mean(SWA, 2) ) ./ std(SWA, [], 2);
-SWAZ(:, setdiff( 1:end, ndxSleep )) = nan;
-SWA(:, setdiff( 1:end, ndxSleep ))  = nan;
+SWAZ = ( SWA ) ./ std(SWA, [], 2);
+SWAZ(:, setdiff( 1:end, ndxSleep ))  = nan;
 
-% Manual artifact rejection
-[ manoutSWA ] = manoutGUI(SWAZ, ...
-    'sleep', visnum, ...
-    'EEG', EEG.data, ...
-    'chanlocs', chanlocs, ...
-    'topo', SWA, ...
-    'spectrum', FFTtot);
 
 % Compute Beta
 BETA = FFTtot(:, freq >= 20 & freq <= 30, :);
 BETA = squeeze(mean(BETA, 2));
 BETAZ = ( BETA - mean(BETA, 2) ) ./ std(BETA, [], 2);
+BETAZ = ( BETA ) ./ std(BETA, [], 2);
+
+% Manual artifact rejection
+[ manoutEEG ] = OutlierGUI(devEEG, ...
+    'sleep', visnum, ...
+    'EEG', EEGZ, ...
+    'chanlocs', chanlocs, ...
+    'topo', SWA, ...
+    'spectrum', FFTtot);
+
+% ********************
+%  Prepare variables
+% ********************
+
+% Remove bad epochs
+SWAZ( isnan(manoutEEG.cleanVALUES) ) = nan;
+SWA( isnan(manoutEEG.cleanVALUES) ) = nan;
+
+% Manual artifact rejection
+[ manoutSWA ] = OutlierGUI(SWAZ, ...
+    'sleep', visnum, ...
+    'EEG', EEGZ, ...
+    'chanlocs', chanlocs, ...
+    'topo', SWA, ...
+    'spectrum', FFTtot);
+
+% Remove bad epochs
 BETAZ( isnan(manoutSWA.cleanVALUES) ) = nan;
+BETA( isnan(manoutSWA.cleanVALUES) ) = nan;
 SWA( isnan(manoutSWA.cleanVALUES) ) = nan;
 
 % Manual artifact rejection
-[ manoutBETA ] = manoutGUI(BETAZ, ...
+[ manoutBETA ] = OutlierGUI(BETAZ, ...
     'sleep', visnum, ...
-    'EEG', EEG.data, ...
+    'EEG', EEGZ, ...
     'chanlocs', chanlocs, ...
-    'topodata', SWA);
+    'topo', SWA, ...
+    'spectrum', FFTtot);
 
 % Artndxn correspondence
-artndxnz = ~isnan(manoutBETA.cleanVALUES) ;
+artndxn = ~isnan(manoutBETA.cleanVALUES) ;
+% SWAZ( isnan(manoutBETA.cleanVALUES) ) = nan;
 
 % ********************
 %     Save output
 % ********************
 
 % Convert to single
-artndxnz    = logical(artndxnz);
+artndxn     = logical(artndxn);
 visgood     = single(visgood);
 visnum      = single(visnum);
 IMP.evening = single(IMP.evening);
 IMP.morning = single(IMP.morning);    
 
 % % save
-save(fullfile(pathART, conf.artndxn.filename), 'artndxnz', 'conf', 'visnum', 'visgood', 'IMP')
+save(fullfile(pathART, conf.artndxn.filename), 'artndxn', 'conf', 'visnum', 'visgood', 'IMP')
 
-artout = artfun(artndxnz, visnum, ...
+artout = artfun(artndxn, visnum, ...
     'visgood', visgood, 'exclChans', [107 113, 126, 127], 'cleanThresh', 97, 'plotFlag', 1);
             
