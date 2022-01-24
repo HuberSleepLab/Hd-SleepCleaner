@@ -696,7 +696,7 @@ function cb_plotEEG_allchans( src, event )
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
     colororder(s5, rainbow)   
-    
+
     guidata(gcf, handles);     % Update handles       
 end
 
@@ -771,7 +771,8 @@ function p = plot_main(X, Y)
     % Plot main plot
     p = plot(X, Y', 'k.:', ...
         'MarkerSize',  markersize, ...
-        'LineWidth',  linewidth);
+        'LineWidth',  linewidth, ...
+        'HandleVisibility','off');
     if ~isempty(sleep)
         xticklabels({})
     end
@@ -794,6 +795,10 @@ function p = plot_main(X, Y)
         handles.xlim_original = get(s1, 'XLim');
         handles.ylim_original = get(s1, 'YLim');
     end
+
+%     % Rainbowcolor
+%     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+%     colororder(s1, rainbow)      
     
     % Turn brush on
     set( brushf, ...
@@ -816,7 +821,8 @@ function po = plot_circles(X, Y0, cleandxnz)
     % Draw them as red circles
     hold on;
     po = plot(X, delY', 'ro', ...
-        'MarkerSize',  markersize); 
+        'MarkerSize',  markersize, ...
+        'HandleVisibility','off'); 
     hold off;
 end
 
@@ -967,6 +973,29 @@ function ch_main_onechan( src, event )
     title('Main plot');    
     legend(sprintf('Channel %d', chans))
     ylabel('Values (e. g. z-values)');       
+
+    % Rainbowcolor
+    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+
+    % Highlight channel with a different color in main plot
+    for chan = chans
+        if handles.p(chan).Marker == '.';               
+            handles.p(chan).MarkerFaceColor = rainbow(chan, :);
+%             handles.p(chan).MarkerSize = 8;
+            handles.p(chan).Marker = 's';  
+            handles.p(chan).HandleVisibility = 'on';
+            handles.p(chan).DisplayName = sprintf('Channel %d', chan);   
+            legend(s1);
+        else
+            handles.p(chan).MarkerFaceColor = 'k';
+%             handles.p(chan).MarkerSize = 8;
+            handles.p(chan).Marker = '.';         
+            handles.p(chan).HandleVisibility = 'off';            
+        end
+    end
+   
+    % Update guidata
+    guidata(gcf, handles);      % Update handles       
 end
 
 function cb_meanthresh( src, event )
