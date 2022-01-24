@@ -961,40 +961,50 @@ function ch_main_onechan( src, event )
 
     % Grab channel
     chans     = str2num(get(main_chans, 'String'));
-
-    % Open new figure
-    fmainchan = figure()
-
-    % Values to plot
-    Y1 = handles.Y(chans, :);
-
-    % Plot main plot
-    plot(handles.X, Y1', 'k.:', ...
-        'MarkerSize',  markersize, ...
-        'LineWidth',  linewidth);
-    title('Main plot');    
-    legend(sprintf('Channel %d', chans))
-    ylabel('Values (e. g. z-values)');       
-
+   
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
 
     % Highlight channel with a different color in main plot
     for chan = chans
-        if handles.p(chan).Marker == '.';               
+        if handles.p(chan).Marker == '.';   
+            % Highlight channel
             handles.p(chan).MarkerFaceColor = rainbow(chan, :);
             handles.p(chan).Marker = 's';  
             % handles.p(chan).MarkerSize = 8;            
             % handles.p(chan).HandleVisibility = 'on';
             handles.p(chan).DisplayName = sprintf('Channel %d', chan);   
-            legend(s1);
+
+             % Open new figure
+            fmainchan = figure('color', 'w')
+        
+            % Values to plot
+            Y1 = handles.Y(chan, :);
+        
+            % Plot main plot
+            plot(handles.X, Y1', 'k.:', ...
+                'MarkerSize',  markersize, ...
+                'LineWidth',  linewidth);
+            title('Main plot');    
+            legend(sprintf('Channel %d', chan))
+            ylabel('Values (e. g. z-values)');   
+            xlabel('Epoch')
+        
         else
+            % Turn back to normal            
             handles.p(chan).MarkerFaceColor = 'k';
             handles.p(chan).Marker = '.';    
+            handles.p(chan).DisplayName = '';               
             % handles.p(chan).MarkerSize = 8;            
             % handles.p(chan).HandleVisibility = 'off';            
         end
+    
+           
     end
+
+    % Show legend
+    chans_legend = arrayfun(@(x) ~isempty(x.DisplayName), handles.p, 'UniformOutput', 1);
+    legend(s1, handles.p(chans_legend));    
    
     % Update guidata
     guidata(gcf, handles);      % Update handles       
