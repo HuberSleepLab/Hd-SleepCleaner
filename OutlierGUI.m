@@ -636,6 +636,9 @@ function cb_plotEEG( src, event )
     brushVAL  = get(handles.p, 'YData');    
     brushNDX = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
 
+    % Rainbowcolor
+    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+
     % Plot brushed data    
     axes(s5);
     hold off    
@@ -647,18 +650,17 @@ function cb_plotEEG( src, event )
             XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
-            plot(X, EEG, 'LineWidth', .8, 'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y));
+            plot(X, EEG, ...
+                'LineWidth', .8, ...
+                'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y), ...
+                'color', rainbow(ch, :));
             hold on;
         end
     end
     handles.plotEEG = s5.Children;
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
-    title('EEG (brushed epochs)')
-
-    % Rainbowcolor
-    rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
-    colororder(s5, rainbow)   
+    title('EEG (brushed epochs)') 
 
     guidata(gcf, handles);     % Update handles       
 end
@@ -772,7 +774,7 @@ function p = plot_main(X, Y)
     p = plot(X, Y', 'k.:', ...
         'MarkerSize',  markersize, ...
         'LineWidth',  linewidth, ...
-        'HandleVisibility','off');
+        'HandleVisibility','on');
     if ~isempty(sleep)
         xticklabels({})
     end
@@ -981,16 +983,16 @@ function ch_main_onechan( src, event )
     for chan = chans
         if handles.p(chan).Marker == '.';               
             handles.p(chan).MarkerFaceColor = rainbow(chan, :);
-%             handles.p(chan).MarkerSize = 8;
             handles.p(chan).Marker = 's';  
-            handles.p(chan).HandleVisibility = 'on';
+            % handles.p(chan).MarkerSize = 8;            
+            % handles.p(chan).HandleVisibility = 'on';
             handles.p(chan).DisplayName = sprintf('Channel %d', chan);   
             legend(s1);
         else
             handles.p(chan).MarkerFaceColor = 'k';
-%             handles.p(chan).MarkerSize = 8;
-            handles.p(chan).Marker = '.';         
-            handles.p(chan).HandleVisibility = 'off';            
+            handles.p(chan).Marker = '.';    
+            % handles.p(chan).MarkerSize = 8;            
+            % handles.p(chan).HandleVisibility = 'off';            
         end
     end
    
