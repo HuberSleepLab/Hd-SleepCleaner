@@ -82,7 +82,6 @@ EEG_RZ = ( EEG.data - median(EEG.data, 2) ) ./ (prctile(EEG.data, 75, 2) - prcti
 % Compute pwelch
 [FFTtot, freq] = pwelchEPO(EEG_RZ, 125, 20);
 
-
 % ********************
 %         SWA 
 % ********************
@@ -140,7 +139,7 @@ SWA(  isnan(manoutBETA.cleanVALUES) )   = nan;
     'chanlocs', chanlocs, ...
     'topo', SWA, ...
     'spectrum', FFTtot, ...
-    'epo_thresh', 7);
+    'epo_thresh', 8);
 
 
 % ********************
