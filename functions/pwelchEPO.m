@@ -4,8 +4,16 @@ function [FFTtot, freq] = pwelchEPO(EEG, srate, winlen)
 nChan     = size(EEG,1);                            % chanenls
 nPnts     = size(EEG,2);                            % sample points
 nEpo20    = floor(nPnts/srate/winlen);              % number of 20s epochs
-FFTtot    = double(NaN(nChan, 161, nEpo20));   % stores final power values
+FFTtot    = double(NaN(nChan, 161, nEpo20));        % stores final power values
 FFTepoch  = double([]);                             % stores power values per 20s epoch 
+
+% Identify infinity values and replace values
+% Otherwise pwelch won't work
+infchans = find(any(isinf(EEG), 2));
+if ~isempty(infchans)
+    fprintf('Channels %g have a 0 line', infchans)
+    EEG(infchans, :) = linspace(0, 100, size(EEG, 2));
+end
 
 % power computation
 wb = waitbar(0, 'Compute power ...');
@@ -30,5 +38,8 @@ for epo = 1:nEpo20
 
 end  
 close(wb); % close waitbar
+
+% Replace infinity channels with nan
+FFTtot(infchans, :, :) = nan;
 
 end
