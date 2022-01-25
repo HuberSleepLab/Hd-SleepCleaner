@@ -53,6 +53,7 @@ addParameter(p, 'chanlocs', [], @isstruct)           % Channel locations
 addParameter(p, 'topo', Y, @isnumeric)               % Data for topoplots
 addParameter(p, 'spectrum', [], @isnumeric)          % Data for pwoer spectrum
 addParameter(p, 'fres', 0.25, @isnumeric)            % Frequency resolution of power spectrum
+addParameter(p, 'epo_thresh', 8, @isnumeric)         % Frequency resolution of power spectrum
 parse(p, varargin{:});
     
 % Assign variables
@@ -64,6 +65,7 @@ chanlocs    = p.Results.chanlocs;
 topo        = p.Results.topo;
 spectrum    = p.Results.spectrum;
 fres        = p.Results.fres;
+epo_thresh  = p.Results.epo_thresh;
 
 % Preallocate
 cleandxnz = [];
@@ -190,8 +192,8 @@ handles.plotEEG         = plotEEG;              % Plot of EEG
 handles.chans_highlighted = [];                 % Highlights these channels in main plot
 
 % Channel outlier detection
-[handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, 8);    
-[handles.Y handles.topo handles.movavg_outlier] = movavg_outlier(handles.Y, handles.topo, 8);    
+[handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, epo_thresh);    
+[handles.Y handles.topo handles.movavg_outlier] = movavg_outlier(handles.Y, handles.topo, 6);    
 update_main
 
 % Throw handles to figure
