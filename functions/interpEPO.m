@@ -91,7 +91,7 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     % ***************************
 
     % Channels that are not EEG
-    chansRMV = [49 56 107 113];
+    chansRMV = [49 56 107 113 126 127];
 
     % Remove chin & earlobes
     % EEG.data( [49 56 107 113], : ) = nan;
