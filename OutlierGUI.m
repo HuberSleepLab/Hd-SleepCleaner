@@ -511,10 +511,11 @@ function [prc1, prc2] = compute_bar(Y0, artndxnz)
     % Computes percentage 
     % correct in each channel
 
-    nonanEPO = sum(isnan(Y0)) == 0;  % Epochs that contained values
-    prc1  = sum(~artndxnz(:, nonanEPO), 2) ...
-        ./ sum(nonanEPO) * 100;      % Percentage of clean sleep epochs
-    prc2 = prc1;                     % Percentage of bad sleep epochs
+    numNAN   = sum(isnan(Y0));
+    nonanEPO = numNAN == min(numNAN);  % Epochs that contained values
+    prc1  = sum(~artndxnz(:, nonanEPO), 2, 'omitnan') ...
+        ./ sum(nonanEPO, 'omitnan') * 100;      % Percentage of clean sleep epochs
+    prc2 = prc1;                       % Percentage of bad sleep epochs
     prc2(prc2 >= barthresh) = nan;          
 
 end
@@ -689,8 +690,24 @@ function cb_plotEEG( src, event )
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)');
 
+    % Adjust Y ylimits
+    adjust_ylimEEG(handles)
+
     guidata(gcf, handles);     % Update handles       
 end
+
+    function adjust_ylimEEG(handles)
+        ydata = get(handles.plotEEG, 'YData');
+        if ~isempty(ydata)
+            if ~iscell(ydata)
+                ydata = {ydata};
+            end
+            data20s = cellfun(@(x) x( 10*handles.srate : 30*handles.srate ), ydata, 'Uni', 0);
+            ylim2 = max(cellfun(@max, data20s)) + max(cellfun(@max, data20s)) / 20;
+            ylim1 = min(cellfun(@min, data20s)) - min(cellfun(@max, data20s)) / 20;
+            ylim([ylim1, ylim2])   
+        end
+    end
 
 function cb_plotEEG_allchans( src, event )
     % Callback:
@@ -725,6 +742,9 @@ function cb_plotEEG_allchans( src, event )
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
     colororder(s5, rainbow);  
+
+    % Adjust Y ylimits
+    adjust_ylimEEG(handles)    
 
     guidata(gcf, handles);     % Update handles       
 end
@@ -761,6 +781,10 @@ function cb_eeg_chans( src, event )
     xline([0 20], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
+
+    % Adjust Y ylimits
+    adjust_ylimEEG(handles)    
+
     guidata(gcf, handles);     % Update handles       
 end
 
@@ -788,6 +812,9 @@ function cb_remove_eeg( src, event )
 
     delete(s5.Children(lines));       
     handles.plotEEG = s5.Children;    
+
+    % Adjust Y ylimits
+    adjust_ylimEEG(handles)    
 
     % Update guidata
     update_main(src, event)
@@ -1167,7 +1194,8 @@ function keyPress(src, event)
         case 'r'
             cb_del_brushdata( src, event );       
         case 't'
-            cb_plotEEG( src, event );           
+            cb_plotEEG( src, event ); 
+            cb_topo_brush( src, event ); 
         case 'z'
             cb_topo_brush( src, event );   
         case 'f'
