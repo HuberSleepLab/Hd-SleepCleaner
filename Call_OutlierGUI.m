@@ -37,14 +37,16 @@ chanlocs = readlocs('test129.loc');
 
 % Grab files
 [fileVIS, pathVIS]  = uigetfile('*.vis', 'Select *.vis file (containing sleep scoring)', 'Select .vis file', 'MultiSelect', 'off');                                    % Select .vis 
-[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis 
-[fileART, pathART]  = uigetfile('*.mat', 'Select artndxn file if you want to continue', fullfile(pathVIS, 'Select artndxn.mat if you want to continue, cancel otherwise'), 'MultiSelect', 'off'); % Select artndxn file if you want to continue
+[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, '..', 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis 
+[fileART, pathART]  = uigetfile('*.mat', 'Select artndxn file if you want to continue', fullfile(pathVIS, '..', 'Select artndxn.mat if you want to continue, cancel otherwise'), 'MultiSelect', 'off'); % Select artndxn file if you want to continue
 
 % Artndxn filename
 if ~isstr(fileART)
     [~, nameART] = fileparts(fileVIS);
     nameART = [nameART, '_artndxn.mat'];    
     pathART = pathVIS;
+else
+    nameART = fileART;
 end
 
 % Load sleep scoring
@@ -64,13 +66,16 @@ load(fullfile(pathEEG, fileEEG), 'EEG')
 % Load Artndxn
 if isstr(fileART)
     fprintf('** Load %s\n', fileART)      
-    load(fullfile(pathART, fileART), 'EEG')
+    load(fullfile(pathART, fileART), 'artndxn')
+else
+    artndxn = [];
 end
 fprintf('** Artndxn will be saved here: %s\n', pathART)    
 
 
+
 % ********************
-%       P Welch
+%    CZ referenced
 % ********************
 
 % Work with 128 channels
@@ -80,83 +85,46 @@ EEG = pop_select(EEG, 'channel', 1:128);
 EEG_RZ = ( EEG.data - median(EEG.data, 2) ) ./ (prctile(EEG.data, 75, 2) - prctile(EEG.data, 25, 2));
 
 % Compute pwelch
-[FFTtot, freq] = pwelchEPO(EEG_RZ, 125, 20);
+[FFTtot, freq] = pwelchEPO(EEG_RZ, EEG.srate, 20);
 
-% ********************
-%         SWA 
-% ********************
-
-% Compute SWA
-SWA = select_band(FFTtot, freq, 0.75, 4.5, ndxsleep);
-
-% Manual artifact rejection
-[ manoutSWA ] = OutlierGUI(SWA, ...
-    'sleep', visnum, ...
-    'EEG', EEG_RZ, ...
-    'chanlocs', chanlocs, ...
-    'topo', SWA, ...
-    'spectrum', FFTtot, ...
-    'epo_thresh', 8);
+% Outlier routine
+% artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 8, 10, 8);
+artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
 
 
-% ********************
-%         BETA 
-% ********************
 
-% Compute BETA
-BETA = select_band(FFTtot, freq, 20, 30, ndxsleep);
+% ***********************
+%   Average referenced
+% ***********************
 
-% Set artifacts to NaN
-BETA( isnan(manoutSWA.cleanVALUES) ) = nan;
-SWA(  isnan(manoutSWA.cleanVALUES) ) = nan;
+% Set artifacts to nan and then average reference
+[EEGavg] = prep_avgref(EEG.data, EEG.srate, 20, artndxn);
 
-% Manual artifact rejection
-[ manoutBETA ] = OutlierGUI(BETA, ...
-    'sleep', visnum, ...
-    'EEG', EEG_RZ, ...
-    'chanlocs', chanlocs, ...
-    'topo', SWA, ...
-    'spectrum', FFTtot, ...
-    'epo_thresh', 10);
+% Robust z-standardization of EEG
+% EEG_RZ = ( EEGavg - median(EEGavg, 2, 'omitnan') ) ./ (prctile(EEGavg, 75, 2) - prctile(EEGavg, 25, 2));
+EEG_RZ = EEGavg;
 
+% Compute pwelch
+[FFTtot, freq] = pwelchEPO(EEG_RZ, EEG.srate, 20);
+    
+% Outlier routine
+artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
 
-% ********************
-%       Deviation 
-% ********************
-
-% How much channel deviate from mean
-devEEG = deviationEEG(EEG_RZ, 125, 20);
-
-% Set artifacts to NaN
-devEEG( isnan(manoutBETA.cleanVALUES) ) = nan;
-BETA( isnan(manoutBETA.cleanVALUES) )   = nan;
-SWA(  isnan(manoutBETA.cleanVALUES) )   = nan;
-
-% Manual artifact rejection
-[ manoutEEG ] = OutlierGUI(devEEG, ...
-    'sleep', visnum, ...
-    'EEG', EEG_RZ, ...
-    'chanlocs', chanlocs, ...
-    'topo', SWA, ...
-    'spectrum', FFTtot, ...
-    'epo_thresh', 8);
 
 
 % ********************
 %     Save output
 % ********************
 
-% Artndxn correspondence
-artndxn = ~isnan(manoutEEG.cleanVALUES);
-
 % Convert to single
 artndxn     = logical(artndxn);
 visgood     = single(visgood);
 visnum      = single(visnum);
 % IMP.evening = single(IMP.evening);
-% IMP.morning = single(IMP.morning);    
+% IMP.morning = single(IMP.morning);   
 
-% % save
+  
+% save
 save(fullfile(pathART, nameART), 'artndxn', 'visnum', 'visgood')
 
 artout = artfun(artndxn, visnum, ...
