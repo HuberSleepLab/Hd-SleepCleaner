@@ -11,7 +11,7 @@ FFTepoch  = double([]);                             % stores power values per 20
 % Otherwise pwelch won't work
 infchans = find(any(isinf(EEG), 2));
 if ~isempty(infchans)
-    fprintf('Channels %g have a 0 line', infchans)
+    fprintf('Channels %g have a 0 line\n', infchans)
     EEG(infchans, :) = linspace(0, 100, size(EEG, 2));
 end
 
