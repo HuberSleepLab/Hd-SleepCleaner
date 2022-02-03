@@ -20,11 +20,11 @@ wb = waitbar(0, 'Compute power ...');
 for epo = 1:nEpo20
 
     % sample points in each 20s window
-    from              = (epo-1)*winlen*srate+1;
-    to                = (epo-1)*winlen*srate+winlen*srate;
+    from             = (epo-1)*winlen*srate+1;
+    to               = (epo-1)*winlen*srate+winlen*srate;
 
     % pwelch
-    [FFTepoch, freq] = pwelch(EEG(:, from:to)', hanning(4*srate), 0, 4*srate, srate);
+    [FFTepoch, freq] = pwelch(EEG(:, from:to)', hanning(4*srate), 2*srate, 4*srate, srate);
     FFTepoch         = FFTepoch'; % to get channel x frequency
 
     % frequencies of interest
