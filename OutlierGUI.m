@@ -54,6 +54,7 @@ addParameter(p, 'topo', Y, @isnumeric)               % Data for topoplots
 addParameter(p, 'spectrum', [], @isnumeric)          % Data for pwoer spectrum
 addParameter(p, 'fres', 0.25, @isnumeric)            % Frequency resolution of power spectrum
 addParameter(p, 'epo_thresh', 8, @isnumeric)         % Frequency resolution of power spectrum
+addParameter(p, 'epo_select', [], @isnumeric)        % Only show specific epochs
 parse(p, varargin{:});
     
 % Assign variables
@@ -66,6 +67,7 @@ topo        = p.Results.topo;
 spectrum    = p.Results.spectrum;
 fres        = p.Results.fres;
 epo_thresh  = p.Results.epo_thresh;
+epo_select  = p.Results.epo_select;
 
 % Preallocate
 cleandxnz = [];
@@ -77,11 +79,34 @@ linewidth  = 0.1;
 fmax       = 30;  % Hz
 barthresh  = 97;  % Percent
 fontsize   = 12;
+lenEPO     = 20;
 
 % Load colormap
 L18 = [];
 load('L18.mat');
 
+
+% ********************
+%   Specific epochs 
+% ********************  
+
+if ~isempty(epo_select)
+
+    % Save original
+    YOrigin     = Y;
+
+    % Select specified epochs
+    sleep       = sleep(epo_select);
+    Y           = Y(:, epo_select);
+    topo        = topo(:, epo_select);
+    spectrum    = spectrum(:, :, epo_select);
+    X           = 1:numel(epo_select);
+
+    % Select specified EEG data
+    samples = cell2mat(arrayfun(@(x) x*lenEPO*srate - lenEPO*srate+1 : x*lenEPO*srate, epo_select, 'Uni', 0));
+    EEG     = EEG(:, samples);
+
+end
 
 % ********************
 %   Set up figure
@@ -118,14 +143,7 @@ set( brushf, ...
 
 % Main plot
 s1 = subplot('Position', [left bottom_up+.12 width_left height_up-.12]);
-p  = plot_main(X, Y);
-% p  = plot(X, Y', 'k.:', ...
-%      'MarkerSize',  markersize, ...
-%      'LineWidth',  linewidth); 
-% ylabel('Values (e. g. z-values)');
-% xlim_original = get(s1, 'XLim');
-% ylim_original = get(s1, 'YLim');
-% title('Main plot');    
+p  = plot_main(X, Y);   
 
 % Hypnogram
 if ~isempty(sleep)
@@ -853,9 +871,11 @@ function p = plot_main(X, Y)
             % not zoom mode
             dist = ( max(Y(:)) - min(Y(:)) ) / 25;        
             ylim( [ min(Y(:))-dist, max(Y(:))+dist ] );  
-            handles.ylim_original = get(s1, 'YLim');        
+            handles.ylim_original = get(s1, 'YLim');    
+            xlim([min(X)-(max(X)-min(X))/100 max(X)+(max(X)-min(X))/100])            
         end     
     catch
+        xlim([min(X)-(max(X)-min(X))/100 max(X)+(max(X)-min(X))/100])            
         handles.xlim_original = get(s1, 'XLim');
         handles.ylim_original = get(s1, 'YLim');
     end
@@ -1219,10 +1239,23 @@ end
 
 % Create outputs as soon as "done" button is pressed
 uiwait(f)
-output.cleanVALUES  = handles.Y;           % Only clean input values
-output.artndxnz     = handles.artndxnz;    % Corresponding logical matrix indicating which values died during artifact rejection
-% close(handles.f2)
-% close(handles.f1)
+
+if ~isempty(epo_select)
+
+    % Only clean input values
+    output.cleanVALUES                = YOrigin; 
+    output.cleanVALUES(:, epo_select) = handles.Y;
+
+    % Corresponding logical matrix indicating which values died during artifact rejection
+    output.artndxnz                   = zeros(size(YOrigin));
+    output.artndxnz(:, epo_select)    = handles.artndxnz;
+
+else
+    
+    output.cleanVALUES  = handles.Y;           % Only clean input values
+    output.artndxnz     = handles.artndxnz;    % Corresponding logical matrix indicating which values died during artifact rejection
+    
+end
 close(f);
 
 
