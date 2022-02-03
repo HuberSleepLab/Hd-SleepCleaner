@@ -37,8 +37,8 @@ chanlocs = readlocs('test129.loc');
 
 % Grab files
 [fileVIS, pathVIS]  = uigetfile('*.vis', 'Select *.vis file (containing sleep scoring)', 'Select .vis file', 'MultiSelect', 'off');                                    % Select .vis 
-[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, '..', 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis 
 [fileART, pathART]  = uigetfile('*.mat', 'Select artndxn file if you want to continue', fullfile(pathVIS, '..', 'Select artndxn.mat if you want to continue, cancel otherwise'), 'MultiSelect', 'off'); % Select artndxn file if you want to continue
+[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, '..', 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis 
 
 % Artndxn filename
 if ~isstr(fileART)
@@ -81,15 +81,12 @@ fprintf('** Artndxn will be saved here: %s\n', pathART)
 % Work with 128 channels
 EEG = pop_select(EEG, 'channel', 1:128);
 
-% Robust z-standardization of EEG
-EEG_RZ = ( EEG.data - median(EEG.data, 2) ) ./ (prctile(EEG.data, 75, 2) - prctile(EEG.data, 25, 2));
-
 % Compute pwelch
-[FFTtot, freq] = pwelchEPO(EEG_RZ, EEG.srate, 20);
+[FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
 
 % Outlier routine
 % artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 8, 10, 8);
-artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
+artndxn = outlier_routine(EEG.data, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
 
 
 
@@ -101,14 +98,13 @@ artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanl
 [EEGavg] = prep_avgref(EEG.data, EEG.srate, 20, artndxn);
 
 % Robust z-standardization of EEG
-% EEG_RZ = ( EEGavg - median(EEGavg, 2, 'omitnan') ) ./ (prctile(EEGavg, 75, 2) - prctile(EEGavg, 25, 2));
-EEG_RZ = EEGavg;
+% EEGavg = ( EEGavg - median(EEGavg, 2, 'omitnan') ) ./ (prctile(EEGavg, 75, 2) - prctile(EEGavg, 25, 2));
 
 % Compute pwelch
-[FFTtot, freq] = pwelchEPO(EEG_RZ, EEG.srate, 20);
+[FFTtot, freq] = pwelchEPO(EEGavg, EEG.srate, 20);
     
 % Outlier routine
-artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
+artndxn = outlier_routine(EEGavg, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
 
 
 
@@ -123,10 +119,27 @@ visnum      = single(visnum);
 % IMP.evening = single(IMP.evening);
 % IMP.morning = single(IMP.morning);   
 
-  
 % save
 save(fullfile(pathART, nameART), 'artndxn', 'visnum', 'visgood')
 
+
+% ************
+%    Plots
+% ************
+
+% Open figure
+figure('color', 'w') 
+hold on;
+
+% Compute SWA
+SWA = select_band(FFTtot, freq, 0.5, 4.5, ndxsleep, artndxn);
+
+% Plot SWA
+plot(SWA', 'k.:')
+ylabel('SWA (\muV^2)')
+xlabel('Epoch')
+
+% Channel survival
 artout = artfun(artndxn, visnum, ...
     'visgood', visgood, 'exclChans', [107 113, 126, 127], 'cleanThresh', 97, 'plotFlag', 1);
             

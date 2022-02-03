@@ -43,6 +43,9 @@ function [ output ] = manoutGUI(Y, varargin)
 
 close all
 
+% Turn off warnings
+warning('off','all')
+
 % Input parser
 p = inputParser;
 addParameter(p, 'sleep', [], @isnumeric)             % Sleep scoring  
