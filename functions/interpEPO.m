@@ -41,7 +41,7 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     % Input parser
     p = inputParser;
     addParameter(p, 'visgood', [], @isnumeric)       % Epochs that are labelled as clean during sleep scoring (manual artifact rejection), corresponds to: find(sum(vistrack') == 0);
-    addParameter(p, 'plotFlag', 1, @isnumeric)       % Do you want a plot?
+    addParameter(p, 'plotFlag', 0, @isnumeric)       % Do you want a plot?
     addParameter(p, 'exclChans', [43 48 49 56 63 68 73 81 88 94 99 107 113 119 120 125 126 127 128], @isnumeric) % Indices of channels to NOT consider when deciding which epochs are clean and which not (usually corresponds to the outer ring)
     addParameter(p, 'ON_win', {}, @iscell)           % ON windows from SleepLoop
     addParameter(p, 'OFF_win', {}, @iscell)          % OFF windows from SleepLoop
@@ -92,6 +92,11 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
 
     % Channels that are not EEG
     chansRMV = [49 56 107 113 126 127];
+
+    % Adapt chansEXCL
+    exclBIN = zeros(1, size(artndxn, 1));
+    exclBIN(chansEXCL) = 1;
+    exclBIN(chansRMV)  = [];
 
     % Remove chin & earlobes
     % EEG.data( [49 56 107 113], : ) = nan;
@@ -170,9 +175,18 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %   Find clean NREM epochs
     % ***************************
 
+
+    % Classically bad epochs
+    classicCLEAN = find( sum( artndxn( ~exclBIN, : )) == size(artndxn, 1) - sum(exclBIN) );
+
+    % Saved epochs are interpolated 
+    savedEPO = workEPO;
+    savedEPO = setdiff( savedEPO, classicCLEAN );
+
     % Are rejected epochs only bad in excluded channels?
-    exceptions          = sum ( artndxn( setdiff(1:end, chansEXCL), rejEPO ) ) == size(artndxn, 1) - numel(chansEXCL);
-    rejEPO(exceptions)  = [];
+    % exceptions          = sum ( artndxn( ~exclBIN, rejEPO ) ) == size(artndxn, 1) - sum(exclBIN);
+    % rejEPO(exceptions)  = [];
+    rejEPO = setdiff( rejEPO, classicCLEAN );
 
     % All NREM epochs
     allNREM = find(ismember(stages, [-2 -3]));
@@ -213,13 +227,18 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     interpBIN(workEPO)  = 1;
     interpBIN(rejEPO)   = 0;
 
+    % Saved epochs
+    savedBIN           = zeros(1, numel(stages));
+    savedBIN(savedEPO) = 1;
+    savedBIN(rejEPO)   = 0;    
+
     % Print number of epochs
-    fprintf('\n*** #Epochs (#Clean epochs) [#Clean thanks to interpolation]\n')    
-    fprintf('#W: %d (%d) [%d]\n',   sum(stages ==  1), sum(stages ==   1  & cleanBIN), sum(stages ==    1  & interpBIN))    
-    fprintf('#REM: %d (%d) [%d]\n', sum(stages ==  0), sum(stages ==   0  & cleanBIN), sum(stages ==    0  & interpBIN))        
-    fprintf('#N1: %d (%d) [%d]\n',  sum(stages == -1), sum(stages ==  -1  & cleanBIN), sum(stages ==   -1  & interpBIN))
-    fprintf('#N2: %d (%d) [%d]\n',  sum(stages == -2), sum(stages ==  -2  & cleanBIN), sum(stages ==   -2  & interpBIN))    
-    fprintf('#N3: %d (%d) [%d]\n',  sum(stages == -3), sum(stages ==  -3  & cleanBIN), sum(stages ==   -3  & interpBIN))
+    fprintf('\n*** #Epochs (#Clean epochs) [#Interpolated] {#Saved by interp.}\n')    
+    fprintf('#W: %d (%d) [%d] {%d}\n',   sum(stages ==  1), sum(stages ==   1  & cleanBIN), sum(stages ==    1  & interpBIN), sum(stages ==    1  & savedBIN))    
+    fprintf('#REM: %d (%d) [%d] {%d}\n', sum(stages ==  0), sum(stages ==   0  & cleanBIN), sum(stages ==    0  & interpBIN), sum(stages ==    0  & savedBIN))        
+    fprintf('#N1: %d (%d) [%d] {%d}\n',  sum(stages == -1), sum(stages ==  -1  & cleanBIN), sum(stages ==   -1  & interpBIN), sum(stages ==   -1  & savedBIN))
+    fprintf('#N2: %d (%d) [%d] {%d}\n',  sum(stages == -2), sum(stages ==  -2  & cleanBIN), sum(stages ==   -2  & interpBIN), sum(stages ==   -2  & savedBIN))    
+    fprintf('#N3: %d (%d) [%d] {%d}\n',  sum(stages == -3), sum(stages ==  -3  & cleanBIN), sum(stages ==   -3  & interpBIN), sum(stages ==   -3  & savedBIN))
     fprintf('#Clean N2 + N3: %d\n', numel(cleanNREM))   
 
     % Create output variable
@@ -229,5 +248,45 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     artout.chansEXCL   = chansEXCL;
     artout.chansBAD    = chansBAD;
     artout.interpNREM  = find(interpBIN);
+    artout.savedNREM   = find(savedBIN);    
+    artout.classicCLEAN= classicCLEAN;    
     % artout.cleanEPO    = cleanEPO;    
+
+
+
+    % *********************************
+    %   Print some useful information
+    % *********************************
+
+    if plotFlag
+
+        Y = [ ...;
+         sum(stages ==  1), sum(stages ==   1  & cleanBIN), sum(stages ==    1  & interpBIN), sum(stages ==    1  & savedBIN); ...    
+         sum(stages ==  0), sum(stages ==   0  & cleanBIN), sum(stages ==    0  & interpBIN), sum(stages ==    0  & savedBIN); ...        
+         sum(stages == -1), sum(stages ==  -1  & cleanBIN), sum(stages ==   -1  & interpBIN), sum(stages ==   -1  & savedBIN); ...
+         sum(stages == -2), sum(stages ==  -2  & cleanBIN), sum(stages ==   -2  & interpBIN), sum(stages ==   -2  & savedBIN); ...    
+         sum(stages == -3), sum(stages ==  -3  & cleanBIN), sum(stages ==   -3  & interpBIN), sum(stages ==   -3  & savedBIN); ...
+         ];        
+
+        % Open figure
+        figure('color', 'w') 
+        hold on; 
+
+        % Barplot
+        b = bar(Y,'FaceColor','flat');
+
+        % Make pretty
+        b(1).CData = repmat(hex2rgb('#0a3d62'), 5, 1); 
+        b(2).CData = repmat(hex2rgb('#3c6382'), 5, 1); 
+        b(3).CData = repmat(hex2rgb('#60a3bc'), 5, 1); 
+        b(4).CData = repmat(hex2rgb('#82ccdd'), 5, 1); 
+        legend({'#Epochs', '#Clean epochs', '#Thereof interpolated', '#Thereof saved'}, 'Location', 'Northwest')
+        xticks(1:5)
+        xticklabels({'W', 'REM', 'N1', 'N2', 'N3'})  
+        ylabel('#Epochs')
+        grid on
+
+        % Save
+        set(gcf, 'Position', [400, 400, 500, 300]); tightfig();
+    end
 end
