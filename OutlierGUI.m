@@ -980,6 +980,10 @@ function cb_restore_all( src, event )
     handles.brushNDX   = cell(size(handles.Y, 1), 1);   % Delete brushed data
     handles.topo       = handles.topo0;                 % Restore topo
 
+    % Remove automatically detected removals
+    handles.channel_outlier = [];    
+    andles.movavg_outlier = [];   
+
     % Update guidata
     update_main(src, event)
 end
