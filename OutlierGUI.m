@@ -214,7 +214,7 @@ handles.chans_highlighted = [];                 % Highlights these channels in m
 
 % Channel outlier detection
 [handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, epo_thresh);    
-[handles.Y handles.topo handles.movavg_outlier] = movavg_outlier(handles.Y, handles.topo, 6);    
+[handles.Y handles.topo handles.movavg_outlier] = movavg_outlier(handles.Y, handles.topo, 8);    
 update_main
 
 % Throw handles to figure
