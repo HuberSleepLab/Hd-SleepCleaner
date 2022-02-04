@@ -695,8 +695,16 @@ function cb_plotEEG( src, event )
     for ch = 1:numel(brushNDX)
         epos = brushNDX{ch};
         for epo = epos
-            X    = linspace(-10, 30, 40*handles.srate);
-            XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
+            if epo == 1 
+                X    = linspace(0, 30, 30*handles.srate);
+                XT   = epo * 20 * handles.srate - handles.srate * 20 + 1 : epo * 20 * handles.srate + 10 * handles.srate;                   
+            elseif epo == size(handles.Y, 2)
+                X    = linspace(-10, 20, 30*handles.srate);  
+                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 0 * handles.srate;                   
+            else               
+                X    = linspace(-10, 30, 40*handles.srate);
+                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;   
+            end
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
             plot(X, EEG, ...
@@ -746,8 +754,16 @@ function cb_plotEEG_allchans( src, event )
     for ch = 1:size(handles.Y, 1)
         for epo = epos
             if ~isnan(handles.Y(ch, epo))
-                X    = linspace(-10, 30, 40*handles.srate);
-                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
+                if epo == 1 
+                    X    = linspace(0, 30, 30*handles.srate);
+                    XT   = epo * 20 * handles.srate - handles.srate * 20 + 1 : epo * 20 * handles.srate + 10 * handles.srate;                   
+                elseif epo == size(handles.Y, 2)
+                    X    = linspace(-10, 20, 30*handles.srate);  
+                    XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 0 * handles.srate;                   
+                else               
+                    X    = linspace(-10, 30, 40*handles.srate);
+                    XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;   
+                end
                 EEG  = handles.EEG(ch, XT);
                 Y    = brushVAL{ch}(epo);
                 plot(X, EEG, 'LineWidth', .8, 'DisplayName', sprintf('Ch %d, EPO %d, Y=%.2f', ch, epo, Y));
@@ -788,8 +804,16 @@ function cb_eeg_chans( src, event )
     handles.plotEEG = [];    
     for ch = chans
         for epo = epos
-            X    = linspace(-10, 30, 40*handles.srate);
-            XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;
+            if epo == 1 
+                X    = linspace(0, 30, 30*handles.srate);
+                XT   = epo * 20 * handles.srate - handles.srate * 20 + 1 : epo * 20 * handles.srate + 10 * handles.srate;                   
+            elseif epo == size(handles.Y, 2)
+                X    = linspace(-10, 20, 30*handles.srate);  
+                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 0 * handles.srate;                   
+            else               
+                X    = linspace(-10, 30, 40*handles.srate);
+                XT   = epo * 20 * handles.srate - handles.srate * 30 + 1 : epo * 20 * handles.srate + 10 * handles.srate;   
+            end
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
             if ~isnan(Y)
