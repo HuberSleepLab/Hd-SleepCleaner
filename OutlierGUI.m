@@ -1054,8 +1054,8 @@ function cb_chanexcl( src, event )
             end            
         else
             if all(isnan(handles.Y(ch, epos)))
-                handles.Y(ch, :) = handles.Y0(ch, epos);
-                handles.topo(ch, :) = handles.topo0(ch, epos); 
+                handles.Y(ch, epos) = handles.Y0(ch, epos);
+                handles.topo(ch, epos) = handles.topo0(ch, epos); 
             else
                 handles.Y(ch, epos) = nan;
                 handles.topo(ch, epos) = nan;   
