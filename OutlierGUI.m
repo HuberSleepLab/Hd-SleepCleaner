@@ -255,21 +255,21 @@ ph1=0.13; ph0=0.04;
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Remove epochs [R]', ...
+    'string', 'Remove datapoint [R]', ...
     'units', 'normalized', ...
     'position', [panelbutton_left ph0+ph1*6 panelbutton_width ph1], ...
     'callback', @cb_del_brushdata);
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Restore epochs [F]', ...
+    'string', 'Restore datapoint ', ...
     'units', 'normalized', ...
     'position', [panelbutton_left ph0+ph1*5 panelbutton_width ph1], ...
     'callback', @cb_restore_brushdata);
 uicontrol(panel_restorebuttons, ...
     'Style', 'pushbutton', ...
     'fontsize', fontsize_button, ...,
-    'string', 'Restore all data', ...
+    'string', 'Restore all/br. epochs [F]', ...
     'units', 'normalized', ...
     'position', [panelbutton_left ph0+ph1*4 panelbutton_width ph1], ...
     'callback', @cb_restore_all); 
@@ -982,7 +982,7 @@ end
 function cb_restore_brushdata( src, event )
     % Restore brushed datapoints
 
-     % Gather brushed data 
+    % Gather brushed data 
     brushRESTORE = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);     
 
     % Restore brushed removed data
@@ -999,14 +999,38 @@ function cb_restore_all( src, event )
     % Callback:
     % Restore all data points    
 
-    % Restore data
-    handles.Y          = handles.Y0;                    % Restore all data points    
-    handles.brushNDX   = cell(size(handles.Y, 1), 1);   % Delete brushed data
-    handles.topo       = handles.topo0;                 % Restore topo
+    % Gather brushed data 
+    brushRESTORE = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);     
 
-    % Remove automatically detected removals
-    handles.channel_outlier = [];    
-    andles.movavg_outlier = [];   
+    % Restore ALLLL data
+    if all(cellfun(@isempty, brushRESTORE))
+
+        % Restore data
+        handles.Y          = handles.Y0;                    % Restore all data points    
+        handles.brushNDX   = cell(size(handles.Y, 1), 1);   % Delete brushed data
+        handles.topo       = handles.topo0;                 % Restore topo
+    
+        % Remove automatically detected removals
+        handles.channel_outlier = logical(zeros(size(handles.Y0)));    
+        andles.movavg_outlier = logical(zeros(size(handles.Y0)));   
+
+    % Restore all data in brushed epochs
+    else
+
+        % Gather brushed epochs
+        epos = unique([brushRESTORE{:}]);
+
+        % Restore data
+        handles.Y(:, epos)          = handles.Y0(:, epos) ;    % Restore all data points    
+        handles.topo(:, epos)       = handles.topo0(:, epos);  % Restore topo
+
+        % Remove automatically detected removals
+        handles.channel_outlier(:, epos)  = 0;    
+        andles.movavg_outlier(:, epos)  = 0;     
+
+        % Delete storage of deleted brushed data
+        handles.brushNDX = cellfun(@(x) x(~ismember(x, epos)), handles.brushNDX, 'UniformOutput', 0);
+    end
 
     % Update guidata
     update_main(src, event)
@@ -1250,7 +1274,7 @@ function keyPress(src, event)
         case 'z'
             cb_topo_brush( src, event );   
         case 'f'
-            cb_restore_brushdata( src, event );   
+            cb_restore_all( src, event );   
         case 'p'
             cb_remove_powerspectrum( src, event );  
         case 'g'
