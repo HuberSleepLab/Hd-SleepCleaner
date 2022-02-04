@@ -85,8 +85,7 @@ EEG = pop_select(EEG, 'channel', 1:128);
 [FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
 
 % Outlier routine
-% artndxn = outlier_routine(EEG_RZ, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 8, 10, 8);
-artndxn = outlier_routine(EEG.data, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
+artndxn = outlier_routine(EEG.data, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 8, 10, 8);
 
 
 
