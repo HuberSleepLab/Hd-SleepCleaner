@@ -23,6 +23,6 @@ function [devEEG] = deviationEEG(EEG, srate, winlen, artndxn)
 
     % set muscle electrodes to nan
     if size(devEEG, 1) == 128
-        devEEG([107 113], :) = nan;
+        devEEG([107 113 126 127], :) = nan;
     end
 end

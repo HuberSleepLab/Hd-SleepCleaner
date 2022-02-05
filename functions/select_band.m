@@ -12,6 +12,6 @@ function SWA = select_band(FFTtot, freq, f1, f2, ndxSleep, artndxn)
 
     % set muscle electrodes to nan
     if size(SWA, 1) == 128
-        SWA([107 113], :) = nan;
+        SWA([107 113 126 127], :) = nan;
     end
 end
