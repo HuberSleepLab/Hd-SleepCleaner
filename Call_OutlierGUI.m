@@ -119,6 +119,9 @@ save(fullfile(pathART, nameART), 'artndxn', 'visnum', 'visgood')
 figure('color', 'w') 
 hold on;
 
+% Compute PSD
+[FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
+
 % Compute SWA
 SWA = select_band(FFTtot, freq, 0.5, 4.5, ndxsleep, artndxn);
 
