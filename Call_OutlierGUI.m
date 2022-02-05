@@ -81,12 +81,8 @@ fprintf('** Artndxn will be saved here: %s\n', pathART)
 % Work with 128 channels
 EEG = pop_select(EEG, 'channel', 1:128);
 
-% Compute pwelch
-[FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
-
 % Outlier routine
-artndxn = outlier_routine(EEG.data, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 8, 10, 8);
-
+artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 8, 10, 8);
 
 
 % ***********************
@@ -94,17 +90,10 @@ artndxn = outlier_routine(EEG.data, FFTtot, freq, artndxn, ndxsleep, visnum, cha
 % ***********************
 
 % Set artifacts to nan and then average reference
-[EEGavg] = prep_avgref(EEG.data, EEG.srate, 20, artndxn);
+[EEG.data] = prep_avgref(EEG.data, EEG.srate, 20, artndxn);
 
-% Robust z-standardization of EEG
-% EEGavg = ( EEGavg - median(EEGavg, 2, 'omitnan') ) ./ (prctile(EEGavg, 75, 2) - prctile(EEGavg, 25, 2));
-
-% Compute pwelch
-[FFTtot, freq] = pwelchEPO(EEGavg, EEG.srate, 20);
-    
 % Outlier routine
-artndxn = outlier_routine(EEGavg, FFTtot, freq, artndxn, ndxsleep, visnum, chanlocs, 10, 12, 10);
-
+artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 10, 12, 10);
 
 
 % ********************
