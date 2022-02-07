@@ -11,3 +11,6 @@ Before performing this routine on average referenced data, we performed it on Cz
 In the background, two automatic outlier detection procedures supported the artifact removal routine. More specifically, outliers were automatically detected 1) channel-wise when epochs deviated more than x standard deviations from a moving average of 40 epochs and 2) epoch-wise, when channels deviated more than x standard deviations from the average of all channels. Thresholds were adapted for each night but were usually situated between 8 and 12 standard deviations.
 
 Thereafter, channels were interpolated in those epochs in which they were labeled as bad. In case more than 3 neighboring channels were classified as bad, however, the entire epoch was rejected instead. With this method, only a minimal amound of NREM epochs needed to be rejected due to poor data quality. Epochs in which only certain channels show artifacts can be inlcuded in the analysis by interpolating those channels in the respective epoch. Moreover, being able to visualize the EEG of suspicious epochs teaches the researcher a lot about the data when performing this routine.
+
+### Screenshot of the GUI
+![](screenshotGUI.png "Screenshot of the Maltab GUI")
