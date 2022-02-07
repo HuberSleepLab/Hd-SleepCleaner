@@ -20,17 +20,43 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
     % Only show NREM epochs
     NREM = find( ismember( visnum, [-1 -2 -3] ));   
 
+    % Compute SWA
+    SWA     = select_band(FFTtot, freq, 0.5, 4.5, ndxsleep, artndxn);
+    SWA_RZ  = select_band(FFTtot_RZ, freq, 0.5, 4.5, ndxsleep, artndxn);    
+
+    % Compute BETA
+    BETA_RZ = select_band(FFTtot_RZ, freq, 20, 30, ndxsleep, artndxn);    
+    
+    % How much channel deviate from mean
+    devEEG = deviationEEG(EEG.data, 125, 20, artndxn);    
+
+
+%     % ********************
+%     %         SWA 
+%     % ******************** 
+% 
+%     % Manual artifact rejection
+%     % The GUI gets slow when too many epochs are rejected in one go.
+%     % Uncomment this part to do the artifact rejection on robustly
+%     % z-standardized SWA twice to ease computation load.
+%     fprintf('** 0|4: Robustly Z-Standardized SWA ...\n')
+%     [ manoutSWA_RAW0 ] = OutlierGUI(SWA_RZ, ...
+%         'sleep', visnum, ...
+%         'EEG', EEG_RZ, ...
+%         'chanlocs', EEG.chanlocs, ...
+%         'topo', SWA, ...
+%         'spectrum', FFTtot_RZ, ...
+%         'epo_select', NREM, ...
+%         'epo_thresh', T1);     
+% 
+%     % Set artifacts to NaN
+%     SWA_RZ(  isnan(manoutSWA_RAW0.cleanVALUES) ) = nan;      
+
 
     % ********************
     %         SWA 
     % ********************     
-    
-    % Compute SWA
-    SWA     = select_band(FFTtot, freq, 0.5, 4.5, ndxsleep, artndxn);
-%     SWA_RZ  = ( SWA - median(SWA, 2, 'omitnan') ) ./ (prctile(SWA, 75, 2) - prctile(SWA, 25, 2));  
-    SWA_RZ  = select_band(FFTtot_RZ, freq, 0.5, 4.5, ndxsleep, artndxn);
-    
-    
+        
     % Manual artifact rejection
     fprintf('** 1|4: Robustly Z-Standardized SWA ...\n')
     [ manoutSWA ] = OutlierGUI(SWA_RZ, ...
@@ -46,11 +72,6 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
     % ********************
     %         BETA 
     % ********************
-    
-    % Compute BETA
-%     BETA    = select_band(FFTtot, freq, 20, 30, ndxsleep, artndxn);
-%     BETA_RZ = ( BETA - median(BETA, 2, 'omitnan') ) ./ (prctile(BETA, 75, 2) - prctile(BETA, 25, 2)); 
-    BETA_RZ = select_band(FFTtot_RZ, freq, 20, 30, ndxsleep, artndxn);
         
     % Set artifacts to NaN
     BETA_RZ( isnan(manoutSWA.cleanVALUES) ) = nan;
@@ -71,9 +92,6 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
     % ********************
     %       Deviation 
     % ********************
-    
-    % How much channel deviate from mean
-    devEEG = deviationEEG(EEG.data, 125, 20, artndxn);
     
     % Set artifacts to NaN
     devEEG( isnan(manoutBETA.cleanVALUES) )  = nan;
