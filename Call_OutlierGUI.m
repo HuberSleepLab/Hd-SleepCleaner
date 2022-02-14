@@ -1,8 +1,8 @@
 % *************************************************************************
 %
-% Performs semi-automatic artifact rejection based on 
-%   Huber et al. (2000). Exposure to pulsed high-frequency electromagnetic 
-%   field during waking affects human sleep EEG. Neuroreport 11, 3321–3325. 
+% Performs semi-automatic artifact rejection based on
+%   Huber et al. (2000). Exposure to pulsed high-frequency electromagnetic
+%   field during waking affects human sleep EEG. Neuroreport 11, 3321–3325.
 %   doi: 10.1097/00001756-200010200-00012
 %
 % Performs artifact rejection on all channels at once with robustly
@@ -12,7 +12,7 @@
 %
 % *************************************************************************
 
-clear all; 
+clear all;
 close all;
 clc;
 
@@ -21,12 +21,13 @@ filenamepath = fileparts(mfilename('fullpath'));        % path to this script
 addpath(genpath(fullfile(filenamepath, 'chanlocs')));   % add path to channel locations
 addpath(genpath(fullfile(filenamepath, 'colormap')));   % add path to colormap
 addpath(genpath(fullfile(filenamepath, 'functions')));  % add path to functions
-addpath('C:\PhDScripts\EEGlab2021.1');                  % add path to helper-functions
-
-% You need to call eeglab once to load in channel locations
-% eeglab; close;
+% addpath('C:\PhDScripts\EEGlab2021.1');                  % add path to helper-functions
 
 % Channel locations
+if ~exist('test129.loc', 'file') % You need to call eeglab once to load in channel locations
+    eeglab; close;
+end
+
 chanlocs = readlocs('test129.loc');
 
 
@@ -36,14 +37,14 @@ chanlocs = readlocs('test129.loc');
 % ********************
 
 % Grab files
-[fileVIS, pathVIS]  = uigetfile('*.vis', 'Select *.vis file (containing sleep scoring)', 'Select .vis file', 'MultiSelect', 'off');                                    % Select .vis 
+[fileVIS, pathVIS]  = uigetfile('*.vis', 'Select *.vis file (containing sleep scoring)', 'Select .vis file', 'MultiSelect', 'off');                                    % Select .vis
 [fileART, pathART]  = uigetfile('*.mat', 'Select artndxn file if you want to continue', fullfile(pathVIS, '..', 'Select artndxn.mat if you want to continue, cancel otherwise'), 'MultiSelect', 'off'); % Select artndxn file if you want to continue
-[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, '..', 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis 
+[fileEEG, pathEEG]  = uigetfile('*.mat', 'Select *.mat file (EEG structure)', fullfile(pathVIS, '..', 'Select .mat file (EEG structure)'), 'MultiSelect', 'off');                                    % Select .vis
 
 % Artndxn filename
 if ~isstr(fileART)
     [~, nameART] = fileparts(fileVIS);
-    nameART = [nameART, '_artndxn.mat'];    
+    nameART = [nameART, '_artndxn.mat'];
     pathART = pathVIS;
 else
     nameART = fileART;
@@ -60,17 +61,17 @@ vissleep = find(vissymb=='1' | vissymb=='2' | vissymb=='3' | vissymb=='4')';
 ndxsleep = intersect(visgood, vissleep);
 
 % Load EEG
-fprintf('** Load %s\n', fileEEG)      
+fprintf('** Load %s\n', fileEEG)
 load(fullfile(pathEEG, fileEEG), 'EEG')
 
 % Load Artndxn
 if isstr(fileART)
-    fprintf('** Load %s\n', fileART)      
+    fprintf('** Load %s\n', fileART)
     load(fullfile(pathART, fileART), 'artndxn')
 else
     artndxn = [];
 end
-fprintf('** Artndxn will be saved here: %s\n', pathART)    
+fprintf('** Artndxn will be saved here: %s\n', pathART)
 
 
 
@@ -105,7 +106,7 @@ artndxn     = logical(artndxn);
 visgood     = single(visgood);
 visnum      = single(visnum);
 % IMP.evening = single(IMP.evening);
-% IMP.morning = single(IMP.morning);   
+% IMP.morning = single(IMP.morning);
 
 % save
 save(fullfile(pathART, nameART), 'artndxn', 'visnum', 'visgood')
@@ -116,7 +117,7 @@ save(fullfile(pathART, nameART), 'artndxn', 'visnum', 'visgood')
 % ************
 
 % Open figure
-figure('color', 'w') 
+figure('color', 'w')
 hold on;
 
 % Compute PSD
@@ -146,4 +147,3 @@ artout = artfun(artndxn, visnum, ...
 %     'spectrum', FFTtot, ...
 %     'epo_select', find( ismember( visnum, [-1 -2 -3] )), ...
 %     'epo_thresh', 12);
-            
