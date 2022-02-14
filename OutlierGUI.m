@@ -1012,7 +1012,7 @@ function cb_restore_all( src, event )
     
         % Remove automatically detected removals
         handles.channel_outlier = logical(zeros(size(handles.Y0)));    
-        andles.movavg_outlier = logical(zeros(size(handles.Y0)));   
+        handles.movavg_outlier = logical(zeros(size(handles.Y0)));   
 
     % Restore all data in brushed epochs
     else
@@ -1026,7 +1026,7 @@ function cb_restore_all( src, event )
 
         % Remove automatically detected removals
         handles.channel_outlier(:, epos)  = 0;    
-        andles.movavg_outlier(:, epos)  = 0;     
+        handles.movavg_outlier(:, epos)  = 0;     
 
         % Delete storage of deleted brushed data
         handles.brushNDX = cellfun(@(x) x(~ismember(x, epos)), handles.brushNDX, 'UniformOutput', 0);
