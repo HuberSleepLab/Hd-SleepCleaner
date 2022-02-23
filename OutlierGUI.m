@@ -59,6 +59,7 @@ addParameter(p, 'fres', 0.25, @isnumeric)            % Frequency resolution of p
 addParameter(p, 'epo_thresh', 8, @isnumeric)         % 
 addParameter(p, 'epo_select', [], @isnumeric)        % Only show specific epochs
 addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
+addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
 
 parse(p, varargin{:});
     
@@ -74,6 +75,7 @@ fres        = p.Results.fres;
 epo_thresh  = p.Results.epo_thresh;
 epo_select  = p.Results.epo_select;
 epo_len     = p.Results.epo_len;
+main_title  = p.Results.main_title;
 
 % Preallocate
 cleandxnz = [];
@@ -180,7 +182,7 @@ plotPSD = plot_ps2D(spectrum, ~isnan(Y));
 s5 = subplot('Position', [left bottom_low width_left-0.27 height_low]);
 plotEEG = yline(0, 'HandleVisibility','off');
 xline([0 epo_len], 'k:', 'HandleVisibility','off')
-legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)'); xlim([-10 epo_len+10]);
+legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
 title('EEG (brushed epochs)');  
 
 % Prepare topoplot
@@ -698,14 +700,14 @@ function cb_plotEEG( src, event )
         epos = brushNDX{ch};
         for epo = epos
             if epo == 1 
-                X    = linspace(0, epo_len+10, epo_len+10*handles.srate);
+                X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
                 XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
             elseif epo == size(handles.Y, 2)
-                X    = linspace(-10, epo_len, epo_len+10*handles.srate);  
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+                X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
+                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
             else               
-                X    = linspace(-10, epo_len+10, epo_len+20*handles.srate);
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
+                X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
+                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
             end
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
@@ -733,7 +735,7 @@ end
             if ~iscell(ydata)
                 ydata = {ydata};
             end
-            data20s = cellfun(@(x) x( 10*handles.srate : epo_len+10*handles.srate ), ydata, 'Uni', 0);
+            data20s = cellfun(@(x) x( 10*handles.srate : (epo_len+10)*handles.srate ), ydata, 'Uni', 0);
             ylim2 = max(cellfun(@max, data20s)) + max(cellfun(@max, data20s)) / 20;
             ylim1 = min(cellfun(@min, data20s)) - min(cellfun(@max, data20s)) / 20;
             ylim([ylim1, ylim2])   
@@ -757,14 +759,14 @@ function cb_plotEEG_allchans( src, event )
         for epo = epos
             if ~isnan(handles.Y(ch, epo))
                 if epo == 1 
-                    X    = linspace(0, epo_len+10, epo_len+10*handles.srate);
+                    X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
                     XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
                 elseif epo == size(handles.Y, 2)
-                    X    = linspace(-10, epo_len, epo_len+10*handles.srate);  
-                    XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+                    X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
+                    XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
                 else               
-                    X    = linspace(-10, epo_len+10, epo_len+20*handles.srate);
-                    XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
+                    X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
+                    XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
                 end
                 EEG  = handles.EEG(ch, XT);
                 Y    = brushVAL{ch}(epo);
@@ -807,14 +809,14 @@ function cb_eeg_chans( src, event )
     for ch = chans
         for epo = epos
             if epo == 1 
-                X    = linspace(0, epo_len+10, epo_len+10*handles.srate);
+                X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
                 XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
             elseif epo == size(handles.Y, 2)
-                X    = linspace(-10, epo_len, epo_len+10*handles.srate);  
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+                X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
+                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
             else               
-                X    = linspace(-10, epo_len+10, epo_len+20*handles.srate);
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len+10 + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
+                X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
+                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
             end
             EEG  = handles.EEG(ch, XT);
             Y    = brushVAL{ch}(epo);
@@ -887,7 +889,7 @@ function p = plot_main(X, Y)
     if ~isempty(sleep)
         xticklabels({})
     end
-    title('Main plot');    
+    title(main_title);    
     ylabel('Values (e. g. z-values)');   
 
     % Restore axis limits if you were in zoom mode
