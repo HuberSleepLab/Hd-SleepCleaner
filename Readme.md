@@ -14,3 +14,6 @@ Thereafter, channels were interpolated in those epochs in which they were labele
 
 ### Screenshot of the GUI
 ![](screenshotGUI.png "Screenshot of the Maltab GUI")
+
+# How to use it
+Run "Call_OutlierGUI.m", this script will ask you to load 1) EEG data, 2) the corresponding sleep scoring and, in case you want to modify previously rejected artifacts, 3) the corresponding artndxn (containing rejected epochs) file from a previous round. Next, power will be computed automatically and the GUI is called. Click "Done" when you have rejected all artifacts. The GUI will be called several times with different inputs so that you find as many artifacts as possible.
