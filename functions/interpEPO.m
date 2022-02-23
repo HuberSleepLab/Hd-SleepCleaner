@@ -43,18 +43,18 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     addParameter(p, 'visgood', [], @isnumeric)       % Epochs that are labelled as clean during sleep scoring (manual artifact rejection), corresponds to: find(sum(vistrack') == 0);
     addParameter(p, 'plotFlag', 0, @isnumeric)       % Do you want a plot?
     addParameter(p, 'exclChans', [43 48 49 56 63 68 73 81 88 94 99 107 113 119 120 125 126 127 128], @isnumeric) % Indices of channels to NOT consider when deciding which epochs are clean and which not (usually corresponds to the outer ring)
-    addParameter(p, 'ON_win', {}, @iscell)           % ON windows from SleepLoop
-    addParameter(p, 'OFF_win', {}, @iscell)          % OFF windows from SleepLoop
-    addParameter(p, 'T', [], @isnumeric)             % Trigger latencies from SleepLoop    
+    addParameter(p, 'WT', [], @isstruct)                % Structure window and trigger information
+    addParameter(p, 'scoringlen', 20, @isnumeric)    % Epoch length of scoring
+    addParameter(p, 'srate', 125, @isnumeric)        % Sampling rate
     parse(p, varargin{:});
         
     % Assign variables
     visgood     = p.Results.visgood;    
     chansEXCL   = p.Results.exclChans;
     plotFlag    = p.Results.plotFlag;
-    ON_win      = p.Results.ON_win;
-    OFF_win     = p.Results.OFF_win;
-    T           = p.Results.T;
+    WT          = p.Results.WT;
+    scoringlen  = p.Results.scoringlen;
+    srate       = p.Results.srate;
 
 
 
@@ -175,9 +175,11 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %   Find clean NREM epochs
     % ***************************
 
+    % Channels that are constantly bad
+    chansDEAD = sum(artndxn, 2)' == 0;
 
     % Classically bad epochs
-    classicCLEAN = find( sum( artndxn( ~exclBIN, : )) == size(artndxn, 1) - sum(exclBIN) );
+    classicCLEAN = find( sum( artndxn( ~exclBIN & ~chansDEAD, : )) == size(artndxn, 1) - sum(exclBIN) );
 
     % Saved epochs are interpolated 
     savedEPO = workEPO;
@@ -212,6 +214,82 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     cleanNREM = setdiff( cleanNREM, rejEPO );
 
 
+    % *********************************
+    %      Clean W and T from SL2
+    % *********************************
+
+    if ~isempty(WT)
+
+        % *** Clean windows
+        % Windows to 20s epoch
+        epoON   = cellfun(@(x) unique(ceil(x/srate/scoringlen)), WT.W.ON.samples, 'Uni', 0);
+        epoOFF  = cellfun(@(x) unique(ceil(x/srate/scoringlen)), WT.W.OFF.samples, 'Uni', 0);
+               
+        % Artifact free windows
+        artout.WT.W.ON.cleanNREM        = find(cellfun(@(x) any(ismember(cleanNREM, x)), epoON));
+        artout.WT.W.OFF.cleanNREM       = find(cellfun(@(x) any(ismember(cleanNREM, x)), epoOFF));
+        artout.WT.W.Entire.cleanNREM    = intersect(artout.WT.W.ON.cleanNREM, artout.WT.W.OFF.cleanNREM);      
+
+
+        % *** Sleep stage of windows
+        % Sleep stage of each sample point
+        stages_samples = repmat(stages, scoringlen*srate, 1);
+        stages_samples = stages_samples(:);
+    
+        % Unique sleep stages
+        stages_lvl = unique(stages_samples);      
+
+        % If sleep scoring is a little shorter than data
+        ON_win  = cellfun(@(x) x(x <= length(stages_samples)), WT.W.ON.samples, 'Uni', 0);
+        OFF_win = cellfun(@(x) x(x <= length(stages_samples)), WT.W.OFF.samples, 'Uni', 0);
+     
+        % Sleep epoch majority in ON
+        counts                  = cellfun(@(x) histc(stages_samples(x), stages_lvl), ON_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3;   % Assign sleep stage where there was no data to "3" = "END"     
+        artout.WT.W.ON.sleep    = stages_lvl(ndx);
+
+        % Sleep epoch majority in OFF
+        counts                  = cellfun(@(x) histc(stages_samples(x), stages_lvl), OFF_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3;    
+        artout.WT.W.OFF.sleep   = stages_lvl(ndx);  
+
+        % Sleep epoch majority in ON + OFF
+        counts                  = cellfun(@(x, y) histc(stages_samples([x, y]), stages_lvl), ON_win, OFF_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3; 
+        artout.WT.W.Entire.sleep= stages_lvl(ndx);         
+
+
+        % *** Clean Trigger
+        epoT                    = ceil(WT.T.ON.samples/srate/scoringlen);
+        artout.WT.T.ON.cleanNREM= find(ismember(epoT, cleanNREM));   
+        artout.WT.T.ON.sleep    = stages_samples(WT.T.ON.samples);      
+
+
+        % Clean
+
+        % ***  Print windows  
+        fprintf('\n*** #W (#Clean) \n')    
+        fprintf('#ON: %d (%d)\n',  numel(WT.W.ON.samples),  numel(artout.WT.W.ON.cleanNREM))        
+        fprintf('#OFF: %d (%d)\n', numel(WT.W.OFF.samples), numel(artout.WT.W.OFF.cleanNREM))
+        fprintf('#W: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == 1),  numel(intersect(find(artout.WT.W.ON.sleep ==  1),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == 1), numel(intersect(find(artout.WT.W.OFF.sleep ==  1), artout.WT.W.OFF.cleanNREM)))      
+        fprintf('#REM: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == 0),  numel(intersect(find(artout.WT.W.ON.sleep ==  0),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == 0), numel(intersect(find(artout.WT.W.OFF.sleep ==  0), artout.WT.W.OFF.cleanNREM)))          
+        fprintf('#N1: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -1),  numel(intersect(find(artout.WT.W.ON.sleep ==  -1),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -1), numel(intersect(find(artout.WT.W.OFF.sleep ==  -1), artout.WT.W.OFF.cleanNREM)))
+         fprintf('#N2: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -2),  numel(intersect(find(artout.WT.W.ON.sleep ==  -2),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -2), numel(intersect(find(artout.WT.W.OFF.sleep ==  -2), artout.WT.W.OFF.cleanNREM)))
+        fprintf('#N3: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -3),  numel(intersect(find(artout.WT.W.ON.sleep ==  -3),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -3), numel(intersect(find(artout.WT.W.OFF.sleep ==  -3), artout.WT.W.OFF.cleanNREM)))
+    end
 
 
     % *********************************
