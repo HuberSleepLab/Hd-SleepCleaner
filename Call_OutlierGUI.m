@@ -16,6 +16,9 @@ clear all;
 close all;
 clc;
 
+% Variables to specify
+scoringlen = 20;          % window length of sleep scoring (in seconds)
+
 % add paths
 filenamepath = fileparts(mfilename('fullpath'));        % path to this script
 addpath(genpath(fullfile(filenamepath, 'chanlocs')));   % add path to channel locations
@@ -82,7 +85,8 @@ fprintf('** Artndxn will be saved here: %s\n', pathART)
 EEG = pop_select(EEG, 'channel', 1:128);
 
 % Outlier routine
-artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 8, 10, 8);
+artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 8, 10, 8, ...
+    'scoringlen', scoringlen);
 
 
 % ***********************
@@ -90,10 +94,11 @@ artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 8, 10, 8);
 % ***********************
 
 % Set artifacts to nan and then average reference
-[EEG.data] = prep_avgref(EEG.data, EEG.srate, 20, artndxn);
+[EEG.data] = prep_avgref(EEG.data, EEG.srate, scoringlen, artndxn);
 
 % Outlier routine
-artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 10, 12, 10);
+artndxn = outlier_routine(EEG, artndxn, ndxsleep, visnum, 10, 12, 10, ...
+    'scoringlen', scoringlen);
 
 
 % ********************
@@ -120,7 +125,7 @@ figure('color', 'w')
 hold on;
 
 % Compute PSD
-[FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
+[FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, scoringlen);
 
 % Compute SWA
 SWA = select_band(FFTtot, freq, 0.5, 4.5, ndxsleep, artndxn);

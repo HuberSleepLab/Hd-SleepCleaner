@@ -1,4 +1,13 @@
-function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
+function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3, varargin)
+
+
+    % Input parser
+    p = inputParser;
+    addParameter(p, 'scoringlen', 20, @isnumeric)     % Length of epochs used for sleep scoring (in s)
+    parse(p, varargin{:});
+    
+    % Assign variables
+    scoringlen = p.Results.scoringlen;    
 
     
     % ********************
@@ -11,11 +20,11 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
 
     % Compute PSD
     fprintf('Compute PSD ...\n')    
-    [FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, 20);
+    [FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, scoringlen);
 
     % Compute PSD (Robustly z-standardizef EEG)
     fprintf('Compute PSD (Robustly z-standardized EEG) ...\n')    
-    [FFTtot_RZ, freq] = pwelchEPO(EEG_RZ, EEG.srate, 20);    
+    [FFTtot_RZ, freq] = pwelchEPO(EEG_RZ, EEG.srate, scoringlen);    
     
     % Only show NREM epochs
     NREM = find( ismember( visnum, [-1 -2 -3] ));   
@@ -28,7 +37,7 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3)
     BETA_RZ = select_band(FFTtot_RZ, freq, 20, 30, ndxsleep, artndxn);    
     
     % How much channel deviate from mean
-    devEEG = deviationEEG(EEG.data, 125, 20, artndxn);    
+    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn);    
 
 
 %     % ********************
