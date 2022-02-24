@@ -689,6 +689,14 @@ function cb_plotEEG( src, event )
     brushVAL  = get(handles.p, 'YData');    
     brushNDX = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
 
+    % Gather brushed data from rejected datapoints
+    brushVAL0 = get(handles.po, 'YData');    
+    brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    
+    % Brushed data
+    brushNDX2 = [brushNDX, brushNDX0];
+    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false)
+
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
 
@@ -696,8 +704,8 @@ function cb_plotEEG( src, event )
     axes(s5);
     hold off    
     handles.plotEEG = [];
-    for ch = 1:numel(brushNDX)
-        epos = brushNDX{ch};
+    for ch = 1:numel(brushNDX2)
+        epos = brushNDX2{ch};
         for epo = epos
             if epo == 1 
                 X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
