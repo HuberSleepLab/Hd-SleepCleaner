@@ -696,7 +696,7 @@ function cb_plotEEG( src, event )
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
-    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false)
+    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
@@ -766,7 +766,7 @@ function cb_plotEEG_allchans( src, event )
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
-    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false)
+    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
     
     % Gather epos
     epos      = unique([brushNDX2{:}]);
