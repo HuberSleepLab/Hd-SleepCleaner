@@ -737,7 +737,7 @@ function cb_plotEEG( src, event )
     guidata(gcf, handles);     % Update handles       
 end
 
-    function adjust_ylimEEG(handles)
+function adjust_ylimEEG(handles)
         ydata = get(handles.plotEEG, 'YData');
         if ~isempty(ydata)
             if ~iscell(ydata)
@@ -757,7 +757,17 @@ function cb_plotEEG_allchans( src, event )
     % Gather brushed data
     brushVAL  = get(handles.p, 'YData');    
     brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
-    epos      = unique([brushNDX{:}]);
+
+    % Gather brushed data from rejected datapoints
+    brushVAL0 = get(handles.po, 'YData');    
+    brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    
+    % Brushed data
+    brushNDX2 = [brushNDX, brushNDX0];
+    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false)
+    
+    % Gather epos
+    epos      = unique([brushNDX2{:}]);
 
     % Plot brushed data    
     axes(s5);
