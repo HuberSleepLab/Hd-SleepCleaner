@@ -692,6 +692,7 @@ function cb_plotEEG( src, event )
     % Gather brushed data from rejected datapoints
     brushVAL0 = get(handles.po, 'YData');    
     brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    [handles.po.BrushData] = deal([]);    
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
@@ -761,6 +762,7 @@ function cb_plotEEG_allchans( src, event )
     % Gather brushed data from rejected datapoints
     brushVAL0 = get(handles.po, 'YData');    
     brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    [handles.po.BrushData] = deal([]);
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
