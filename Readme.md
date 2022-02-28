@@ -18,5 +18,6 @@ Thereafter, channels were interpolated in those epochs in which they were labele
 # How to use it
 Run "Call_OutlierGUI.m", this script will ask you to load 1) EEG data, 2) the corresponding sleep scoring, and 3), in case you want to modify previously rejected artifacts, the corresponding artndxn (containing rejected epochs) file from a previous round. The EEG data needs to be stored in an [EEG structure as used in EEGLAB](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg). Next, power will be computed automatically and the GUI is called. Click "Done" when you have rejected all artifacts. The GUI will be called several times with different inputs so that you find as many artifacts as possible.
 
-[![IMAGE ALT TEXT](ScreenshotGUI.png)](https://youtu.be/XG-Dh1JqR5E "How to use the GUI")
+### How to use the GUI (video)
+[![IMAGE ALT TEXT](Thumbnail.png)](https://youtu.be/XG-Dh1JqR5E "How to use the GUI")
 
