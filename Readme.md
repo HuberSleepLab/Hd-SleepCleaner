@@ -13,7 +13,10 @@ In the background, two automatic outlier detection procedures supported the arti
 Thereafter, channels were interpolated in those epochs in which they were labeled as bad. In case more than 3 neighboring channels were classified as bad, however, the entire epoch was rejected instead. With this method, only a minimal amound of NREM epochs needed to be rejected due to poor data quality. Epochs in which only certain channels show artifacts can be inlcuded in the analysis by interpolating those channels in the respective epoch. Moreover, being able to visualize the EEG of suspicious epochs teaches the researcher a lot about the data when performing this routine.
 
 ### Screenshot of the GUI
-![](screenshotGUI.png "Screenshot of the Maltab GUI")
+![](ScreenshotGUI.png "Screenshot of the Maltab GUI")
 
 # How to use it
-Run "Call_OutlierGUI.m", this script will ask you to load 1) EEG data, 2) the corresponding sleep scoring and, in case you want to modify previously rejected artifacts, 3) the corresponding artndxn (containing rejected epochs) file from a previous round. The EEG data needs to be stored in an [EEG structure as used in EEGLAB](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg). Next, power will be computed automatically and the GUI is called. Click "Done" when you have rejected all artifacts. The GUI will be called several times with different inputs so that you find as many artifacts as possible.
+Run "Call_OutlierGUI.m", this script will ask you to load 1) EEG data, 2) the corresponding sleep scoring, and 3), in case you want to modify previously rejected artifacts, the corresponding artndxn (containing rejected epochs) file from a previous round. The EEG data needs to be stored in an [EEG structure as used in EEGLAB](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg). Next, power will be computed automatically and the GUI is called. Click "Done" when you have rejected all artifacts. The GUI will be called several times with different inputs so that you find as many artifacts as possible.
+
+[![IMAGE ALT TEXT](ScreenshotGUI.png)](https://youtu.be/XG-Dh1JqR5E "How to use the GUI")
+
