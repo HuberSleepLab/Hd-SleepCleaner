@@ -187,7 +187,7 @@ title('EEG (brushed epochs)');
 
 % Prepare topoplot
 s6 = subplot('Position', [left+0.51 bottom_low 0.16 height_low]);
-topoplotGUI(zeros(1, size(Y, 2)), [0 1], []);
+topoplotGUI(zeros(1, size(Y, 1)), [0 1], []);
 title('Topoplot (brushed epochs)');    
  
 % Aesthethics

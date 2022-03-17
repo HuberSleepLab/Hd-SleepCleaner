@@ -57,6 +57,10 @@ fprintf('** Load %s\n', fileVIS)
 [vistrack, vissymb, offs] = visfun.readtrac(fullfile(pathVIS, fileVIS), 1);
 [visnum]                  = visfun.numvis(vissymb, offs);
 
+if ~isrow(visnum) 
+    visnum = visnum';
+end
+
 % Compute sleep parameters
 visgood  = find(sum(vistrack') == 0);
 vissleep = find(vissymb=='1' | vissymb=='2' | vissymb=='3' | vissymb=='4')';
