@@ -70,6 +70,8 @@ ndxsleep = intersect(visgood, vissleep);
 fprintf('** Load %s\n', fileEEG)      
 load(fullfile(pathEEG, fileEEG), 'EEG')
 
+EEG.chanlocs = chanlocs;
+
 % Load Artndxn
 if isstr(fileART)
     fprintf('** Load %s\n', fileART)      
