@@ -1011,8 +1011,22 @@ function cb_restore_brushdata( src, event )
 
     % Restore brushed removed data
     for ichan = 1:numel(brushRESTORE)
-        handles.Y(ichan, brushRESTORE{ichan}) = handles.Y0(ichan, brushRESTORE{ichan});
-        handles.topo(ichan, brushRESTORE{ichan}) = handles.topo0(ichan, brushRESTORE{ichan});        
+
+        % Brushed data point
+        bdp = brushRESTORE{ichan};
+
+        if ~isempty(bdp)
+            handles.Y(ichan, bdp)       = handles.Y0(ichan, bdp);
+            handles.topo(ichan, bdp)    = handles.topo0(ichan, bdp); 
+
+            % Remove from manually detected removals
+            tmp_brushNDX                = handles.brushNDX{ichan};
+            handles.brushNDX{ichan}     = tmp_brushNDX(~ismember(tmp_brushNDX, bdp));
+    
+            % Remove from automatically detected removals
+            handles.channel_outlier(ichan, bdp) = logical(0);    
+            handles.movavg_outlier(ichan, bdp)  = logical(0);    
+        end
     end        
 
     % Update guidata
