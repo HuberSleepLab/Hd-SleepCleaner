@@ -87,6 +87,7 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3,
     % ********************
         
     % Set artifacts to NaN
+    SWA( isnan(manoutSWA.cleanVALUES) )     = nan;    
     BETA_RZ( isnan(manoutSWA.cleanVALUES) ) = nan;
     SWA_RZ(  isnan(manoutSWA.cleanVALUES) ) = nan;
     
@@ -113,6 +114,7 @@ function [artndxn] = outlier_routine(EEG, artndxn, ndxsleep, visnum, T1, T2, T3,
     devEEG( isnan(manoutBETA.cleanVALUES) )  = nan;
     BETA_RZ( isnan(manoutBETA.cleanVALUES) ) = nan;
     SWA_RZ( isnan(manoutBETA.cleanVALUES) )  = nan;
+    SWA( isnan(manoutSWA.cleanVALUES) )      = nan;        
     
     % Manual artifact rejection
     fprintf('** 3|4: Deviation from Robustly Z-Standardized Average EEG Signal ...\n')            
