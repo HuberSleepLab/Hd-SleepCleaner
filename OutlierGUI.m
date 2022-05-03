@@ -214,7 +214,11 @@ handles.topo0           = topo;                 % Copy of topoplot data
 handles.spectrum        = spectrum;             % Power spectrum
 handles.plotPSD         = plotPSD;              % Plot of power spectrum
 handles.plotEEG         = plotEEG;              % Plot of EEG
+handles.plotEEG0        = [];                   % Toggle whether EEG was filtered for the first time
+handles.firstfilter     = 1;                    % Toggle whether EEG was filtered for the first time
 handles.chans_highlighted = [];                 % Highlights these channels in main plot
+handles.lpfilter        = [];                   % Initialize filter
+handles.hpfilter        = [];                   % Initialize filter
 
 % Channel outlier detection
 [handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, epo_thresh);    
@@ -262,11 +266,14 @@ panelOUT = uipanel(f, panelprops, ...
 panelCHAN = uipanel(f, panelprops, ...  
     'Position', [panel_left 0.34 panel_width 0.16], ...
     'title', 'Channel manipulations');
+panelFILTER = uipanel(f, panelprops, ...  
+    'Position', [panel_left 0.24 panel_width 0.08], ...
+    'title', 'Filter EEG');
 
 % Distances (vertical and hortizontal)
 D01v = 0.13; D01h = 0.04;
 D02v = 0.18; D02h = 0.04;
-
+D03v = 0.22; D03h = 0.04;
 
 % Push buttons panel01 ("Figure manipulation")
 uicontrol(f, UIprops, ...
@@ -325,6 +332,20 @@ uicontrol(panel02, UIprops, ...
     'string', 'Topo (video)', ...
     'position', [panelbutton_left D02h+D02v*4 panelbutton_width D02v], ...
     'callback', @cb_topo_video); 
+
+% Other Push buttons
+UIprops.fontsize  = 0.5;
+uicontrol(panelFILTER, UIprops, ...
+    'string', 'Filter currently plotted EEG', ...
+    'position', [panelbutton_left D03h+D03v*3 panelbutton_width D03v], ...
+    'callback', @push_filter); 
+
+% Other Toggle buttons
+UIprops.Style    = 'toggle';
+isfilter = uicontrol(panelFILTER, UIprops, ...
+    'string', 'Autofilter OFF (click to turn ON)', ...
+    'position', [panelbutton_left D03h+D03v*2 panelbutton_width D03v], ...
+    'callback', @toggle_filter) 
 
 % Text fields panelOUT ("Automatic outlier detection")
 UIprops.Style               = 'text';
@@ -399,10 +420,153 @@ main_chans = uicontrol(panelCHAN, UIprops, ...
     'position', [panelbutton_left 0.02 panelbutton_width 0.15], ...
     'callback', @ch_main_onechan); 
 
+% Text fields panelFILTER ("Filter EEG")
+UIprops.Style     = 'text';
+UIprops.fontsize  = .4;
+uicontrol(panelFILTER, UIprops, ...
+    'string', 'Lower cut-off (Hz)', ...
+    'position', [panelbutton_left 0.13 panelbutton_width/2 0.25]);
+uicontrol(panelFILTER, UIprops, ...
+    'string', 'Upper cut-off (Hz)', ...
+    'position', [panelbutton_left+panelbutton_width/2 0.13 panelbutton_width/2 0.25]);
+
+% Edit buttons panelFILTER ("Filter EEG") 
+UIprops.Style    = 'edit';
+UIprops.fontsize = 0.4;
+low_cutoff = uicontrol(panelFILTER, UIprops, ...
+    'string', sprintf('> %.1f', 0), ...
+    'position', [panelbutton_left 0.02 panelbutton_width/2 0.25], ...
+    'callback', @edit_cutoff); 
+up_cutoff = uicontrol(panelFILTER, UIprops, ...
+    'string', sprintf('< %.1f', srate/3), ...
+    'position', [panelbutton_left+panelbutton_width/2 0.02 panelbutton_width/2 0.25], ...
+    'callback', @edit_cutoff); 
+
 % ********************
 %   Build Functions
 % ********************
 
+% *** Filter functions
+
+% Update EEG with filtered EEG
+% if it is already plotted
+function push_filter( src, event )
+    handles = guidata(src); 
+
+    % Filtered first time?
+    if handles.firstfilter
+
+        % EEG Data (plotted)
+        YNow = get(handles.plotEEG, 'YData');
+
+        % Save original EEG
+        handles.plotEEG0 = YNow; 
+
+        % Toggle
+        handles.firstfilter = 0;
+
+    else
+        YNow = handles.plotEEG0;
+    end
+
+    % Make it a cell
+    if ~iscell(YNow)
+        YNow = {YNow}; end
+
+    % Length of signal
+    L = length(YNow{1});
+
+    % Miror signal to the sides for filter edge artifacts
+    YFilter = cellfun(@(x) [flip(x) x flip(x)], YNow, 'Uni', 0);
+
+    % Filter EEG Lines
+    if ~isempty(handles.lpfilter)
+        YFilter = cellfun(@(x) filtfilt(handles.lpfilter, double(x)), YFilter, 'Uni', 0);
+    end
+    if ~isempty(handles.hpfilter)
+        YFilter = cellfun(@(x) filtfilt(handles.hpfilter, double(x)), YFilter, 'Uni', 0);
+    end        
+
+    % Select only real data
+    YFilter = cellfun(@(x) x(L+1 : L*2), YFilter, 'Uni', 0);        
+
+    % Update EEG Lines
+    for ichannel = 1:size(YFilter, 1)
+        set(handles.plotEEG(ichannel), 'YData', YFilter{ichannel});
+    end
+
+%     % Adapt Y Axis
+%     adjust_ylimEEG(handles) 
+
+    % Update handles
+    guidata(gcf, handles);       
+end
+
+% Changes lower cut off of filter
+function edit_cutoff( src, event )
+    handles = guidata(src);  
+
+    % Filter cut offs
+    lc = str2num(get(low_cutoff, 'String'));    
+    hc = str2num(get(up_cutoff, 'String'));   
+
+    % Update filter
+    if ~isempty(hc)
+        handles.lpfilter = build_lpfilter( hc );
+    else
+        handles.lpfilter = [];
+    end
+    if ~isempty(lc)
+        handles.hpfilter = build_hpfilter( lc );
+    else
+        handles.hpfilter = [];
+    end    
+
+    % Update handles
+    guidata(gcf, handles);    
+
+    % Apply filter
+    push_filter( src, event )
+end
+
+% Build filter to filter EEG that is plotted in the GUI
+function hpfilter = build_hpfilter( lc )
+
+    % Build filter
+    hpfilter = designfilt( ...
+        'highpassiir', ...
+        'StopbandFrequency', lc*0.5, ...
+        'PassbandFrequency', lc, ...
+        'StopbandAttenuation', 60, ...
+        'PassbandRipple', 0.1, ...
+        'SampleRate', srate, ...
+        'DesignMethod', 'cheby2' ...
+        );
+end
+function lpfilter = build_lpfilter( hc )
+
+    % Build filter
+    lpfilter = designfilt( ...
+        'lowpassiir', ...
+        'StopbandFrequency', hc*1.5, ...
+        'PassbandFrequency', hc, ...
+        'StopbandAttenuation', 60, ...
+        'PassbandRipple', 0.1, ...
+        'SampleRate', srate, ...
+        'DesignMethod', 'cheby2' ...
+        );
+end
+
+% Toggle filter name
+function toggle_filter( src, event )
+
+    if isfilter.Value
+        isfilter.String = 'Autofilter ON (click to turn OFF)';
+    end
+    if ~isfilter.Value
+        isfilter.String = 'Autofilter OFF (click to turn ON)';
+    end    
+end
 
 
 % *** Power spectrum
@@ -712,9 +876,16 @@ function cb_plotEEG( src, event )
         end
     end
     handles.plotEEG = s5.Children;
+    handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)');
+
+    % Filter EEG Toggle
+    if isfilter.Value
+        guidata(gcf, handles); 
+        push_filter( src, event )
+    end
 
     % Adjust Y ylimits
     adjust_ylimEEG(handles)
@@ -780,9 +951,16 @@ function cb_plotEEG_allchans( src, event )
         end
     end
     handles.plotEEG = s5.Children;
+    handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
+
+    % Filter EEG Toggle
+    if isfilter.Value
+        guidata(gcf, handles); 
+        push_filter( src, event )
+    end    
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
@@ -830,10 +1008,17 @@ function cb_eeg_chans( src, event )
             hold on;
         end
     end
-    handles.plotEEG = s5.Children;    
+    handles.plotEEG  = s5.Children;  
+    handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
     title('EEG (brushed epochs)')
+
+    % Filter EEG Toggle
+    if isfilter.Value
+        guidata(gcf, handles); 
+        push_filter( src, event )
+    end    
 
     % Adjust Y ylimits
     adjust_ylimEEG(handles)    
