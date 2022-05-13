@@ -3,6 +3,7 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     % *********************************************************************
     % INPUT
     %
+    % EEG:     Your EEG structure
     % artndxn: Matrix containing output of semi-automatic artifact rejection
     %          That is a matrix (channels x epochs) with
     %          1: good epochs
@@ -19,24 +20,44 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %
     %
     % OUTPUT
+    % A strzcture "AR" containing several subfields. Subfields contain the
+    % index of epochs or channel that fullfill certain criteria.
     %
-    % chansBAD:         Bad channels 
-    %                   These are those channels that are bad in all NREM
-    %                   epochs in which at least one other channel was good
+    % cleanNREM:        Clean NREM epochs
+    %                   Artifact free sleep (N2 + N3) epochs, so epochs
+    %                   that were either clean in all channels or had some
+    %                   bad channels but they all could be interpolated
+    % allNREM:          All NREM epochs
+    %                   Sleep epochs (N2 + N3) with and without artifacts    
+    % cleanMANUAL       Clean NREM epochs from scoring
+    %                   Sleep epochs (N1 + N2 + N3) that are labeled as
+    %                   clean during sleep scoring    
     % chansEXCL:        Excluded channels
     %                   Excluded channels are channels that were not taken
     %                   into account when defining clean epochs, usually
     %                   the outer ring of the HD-EEG net because they are
     %                   often more noisy and as such you would loose more
     %                   data than maybe necessary, especially if you don't
-    %                   analyze the outer ring anyway
-    % cleanNREM:        Artifact free sleep (N2 + N3) epochs
+    %                   analyze the outer ring anyway    
+    % chansBAD:         Bad channels 
+    %                   These are those channels that are bad in all NREM
+    %                   epochs in which at least one other channel was good   
+    % interpNREM        Interpoalted epochs
+    %                   Epochs in which at least one channel was
+    %                   interpolated.    
+    % savedNREM         Saved NREM epochs
+    %                   Epochs that were interpolated and would have been
+    %                   rejected in classicCLEAN can be considered "saved"
+    % classicCLEAN:     Conservative clean epochs
+    %                   Epochs where all channels except those in chansEXCL
+    %                   were good according to artndxn. In other words, in
+    %                   case at least one channel was bad (except it
+    %                   belonged to chansEXCL), it would not be considered
+    %                   clean here.
     % cleanEPO:         Artifact free epochs (usually N1 + N2 + N3 but it
     %                   depends whether REM and WAKE were set to 0 during
     %                   artifact correction).
-    % allNREM:          Sleep epochs (N2 + N3) with and without artifacts
-    % cleanMANUAL       Sleep epochs (N1 + N2 + N3) that are labeled as
-    %                   clean during sleep scoring
+
 
     % Input parser
     p = inputParser;
