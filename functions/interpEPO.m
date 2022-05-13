@@ -20,9 +20,13 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %
     %
     % OUTPUT
-    % A strzcture "AR" containing several subfields. Subfields contain the
-    % index of epochs or channel that fullfill certain criteria.
     %
+    % EEG0:             EEG Data with interpolated epochs
+    % artout:           A structure containing several subfields. They 
+    %                   contain the index of epochs or channels that 
+    %                   fullfill certain criteria.
+    %
+    % ** Subfields **
     % cleanNREM:        Clean NREM epochs
     %                   Artifact free sleep (N2 + N3) epochs, so epochs
     %                   that were either clean in all channels or had some
