@@ -140,8 +140,8 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
         % Are theree too many bad neighbouring channels?
 
         % Data points
-        from = epo * 20 * EEG.srate - 20 * EEG.srate + 1;
-        to   = epo * 20 * EEG.srate;
+        from = epo * scoringlen * EEG.srate - scoringlen * EEG.srate + 1;
+        to   = epo * scoringlen * EEG.srate;
 
         % Extract data
         % EPO = pop_select(EEG, 'point', [from to]);
