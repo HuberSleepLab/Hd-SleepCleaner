@@ -238,6 +238,11 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     % Remove rejected epochs during interpolation
     cleanEPO = setdiff( cleanEPO, rejEPO );
 
+    % Clean sleep stages
+    cleanN1 = intersect( find(stages == -1), cleanNREM);    
+    cleanN2 = intersect( find(stages == -2), cleanNREM);
+    cleanN3 = intersect( find(stages == -3), cleanNREM);    
+
 
     % *********************************
     %      Clean W and T from SL2
@@ -353,6 +358,9 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     artout.interpNREM  = find(interpBIN);
     artout.savedNREM   = find(savedBIN);    
     artout.classicCLEAN= classicCLEAN;    
+    artout.cleanN1     = cleanN1;    
+    artout.cleanN2     = cleanN2;    
+    artout.cleanN3     = cleanN3;          
     % artout.cleanEPO    = cleanEPO;    
 
 
