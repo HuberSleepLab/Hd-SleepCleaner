@@ -206,12 +206,12 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     cleanNREM = setdiff( cleanNREM, rejEPO );
 
     % Epochs with at least 1 clean channel
-    cleanEPO= find( ...
+    cleanEPO = find( ...
         sum(artndxn) ~= 0 ...
         );
 
     % Remove rejected epochs during interpolation
-    cleanNREM = setdiff( cleanNREM, rejEPO );
+    cleanEPO = setdiff( cleanEPO, rejEPO );
 
 
     % *********************************
