@@ -361,7 +361,7 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     artout.cleanN1     = cleanN1;    
     artout.cleanN2     = cleanN2;    
     artout.cleanN3     = cleanN3;          
-    % artout.cleanEPO    = cleanEPO;    
+    artout.cleanEPO    = cleanEPO;    
 
 
 
