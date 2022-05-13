@@ -58,9 +58,16 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %                   case at least one channel was bad (except it
     %                   belonged to chansEXCL), it would not be considered
     %                   clean here.
+    % cleanN1           Clean N1 epochs    
+    %                   Artifact free N1 epochs, so epochs that were either
+    %                   clean in all channels or had some bad channels but 
+    %                   they all could be interpolated
+    % cleanN2           Clean N2 epochs    
+    % cleanN2           Clean N3 epochs    
     % cleanEPO:         Artifact free epochs (usually N1 + N2 + N3 but it
     %                   depends whether REM and WAKE were set to 0 during
-    %                   artifact correction).
+    %                   artifact correction).    
+
 
 
     % Input parser
