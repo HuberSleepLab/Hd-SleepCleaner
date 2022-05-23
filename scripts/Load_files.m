@@ -131,8 +131,7 @@ if endsWith(fileART, '.mat')
     % .mat file
     load(fileART, 'artndxn');                    % Load artifact rejection
     fprintf('** Load %s\n', nameART)    
-    [~, outART]     = fileparts(nameART);        % Filename of output file    
-    outART          = [outART '_modified.mat'];  % To indicate it was modified
+    outART          = nameART;                   % Filename of output file        
 elseif isstr(nameVIS)
     % Sleep scoring exists
     [~, outART]     = fileparts(nameVIS);        % Filename of output file
@@ -148,6 +147,9 @@ else
 end
 fprintf('** Artndxn will be saved here: %s\n', pathART)    
 
+% Evaluation plot name
+[~, namePLOT]   = fileparts(outART);        % Filename of plot  
+namePLOT        = [namePLOT, '.png'];       % Filename of plot  
 
 % *** Convert to single to save space
 visgood     = single(visgood);

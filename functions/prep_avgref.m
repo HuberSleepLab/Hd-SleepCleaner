@@ -11,6 +11,7 @@ FFTepoch  = double([]);                             % stores power values per 20
 EEG0 = EEG;
 
 % power computation
+fprintf('\n Average referencing ...\n')
 wb = waitbar(0, 'Prepare average reference ...');
 for epo = 1:nEpo20
 

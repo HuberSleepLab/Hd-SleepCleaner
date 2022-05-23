@@ -24,13 +24,13 @@ height = 0.25;
 % *** Plot SWA
 subplot('Position', [0.40 0.68 width height ]);
 plot(SWA01', 'k.:')
+ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
 
 subplot('Position', [0.40 0.38 width height ]);
 plot(SWA02', 'k.:')
 
 subplot('Position', [0.40 0.08 width height ]);
 plot(SWA03', 'k.:')
-ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
 xlabel('Epoch')
 
 % Load colormap
@@ -51,7 +51,7 @@ p1=get(gca, 'Position');
 cbar=colorbar();
 set(gca, 'Position', p1);   
 ylabel(cbar, sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
-title(sprintf('Whole-night\n(raw, original ref)'))
+title(sprintf('Whole-night\nRaw, original ref'))
 
 % Topoplot
 subplot('Position', [0.001 0.38 width+0.05 height ]);
@@ -66,7 +66,7 @@ topoplot( SWA02x, EEG.chanlocs, ...
 p1=get(gca, 'Position'); 
 cbar=colorbar();
 set(gca, 'Position', p1);   
-title(sprintf('(clean, original ref)'))
+title(sprintf('Clean, original ref'))
 
 % Topoplot
 subplot('Position', [0.001 0.08 width+0.05 height ]);
@@ -82,7 +82,7 @@ p1=get(gca, 'Position');
 cbar=colorbar();
 set(gca, 'Position', p1);   
 ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
-title(sprintf('(clean, median ref)'))
+title(sprintf('Clean, average ref'))
 
 % *** Clean sleep epochs after manual artifact rejection
 cleanThresh     = .97;
@@ -111,6 +111,6 @@ barh(prcnt_epoexcl, 'FaceColor', uint8([200 200 200]), 'DisplayName', 'Excl. cha
 barh(prcnt_epolow, 'r', 'DisplayName', 'Bad channels');
 
 % Make pretty
-xlim([min([prcnt_cleanEPO; cleanThresh])*100 100]); xlabel('(%) in of N1 N2 N3'); ylabel('Channel ID'); yticks(4:4:128); ylim([1 size(artndxn, 1)]);
+xlim([min([prcnt_cleanEPO; cleanThresh])*100 100]); xlabel(sprintf('Proportion of clean epochs (%%)\nin sleep stages %s', num2str(stages))); ylabel('Channel ID'); yticks(4:4:128); ylim([1 size(artndxn, 1)]);
 plot(repmat(cleanThresh, 1, length(prcnt_cleanEPO)), 1:length(prcnt_cleanEPO), ':', 'LineWidth', 2, 'DisplayName', 'Threshold')
 % legend('Location', 'North', 'Orientation','horizontal');    

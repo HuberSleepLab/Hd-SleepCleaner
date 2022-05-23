@@ -60,7 +60,8 @@ addParameter(p, 'epo_thresh', 8, @isnumeric)         %
 addParameter(p, 'epo_select', [], @isnumeric)        % Only show specific epochs
 addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
 addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
-addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Title of main plot
+addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Y label of EEG plot
+addParameter(p, 'main_ylabel', 'Values', @ischar)         % Frequency range for main plot title
 
 parse(p, varargin{:});
     
@@ -78,6 +79,7 @@ epo_select  = p.Results.epo_select;
 epo_len     = p.Results.epo_len;
 main_title  = p.Results.main_title;
 amp_ylabel  = p.Results.amp_ylabel;
+main_ylabel = p.Results.main_ylabel;
 
 % Preallocate
 cleandxnz = [];
@@ -1081,7 +1083,7 @@ function p = plot_main(X, Y)
         xticklabels({})
     end
     title(main_title);    
-    ylabel('Values (e. g. z-values)');   
+    ylabel(main_ylabel);   
 
     % Restore axis limits if you were in zoom mode
     try
