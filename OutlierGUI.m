@@ -60,6 +60,7 @@ addParameter(p, 'epo_thresh', 8, @isnumeric)         %
 addParameter(p, 'epo_select', [], @isnumeric)        % Only show specific epochs
 addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
 addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
+addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Title of main plot
 
 parse(p, varargin{:});
     
@@ -76,6 +77,7 @@ epo_thresh  = p.Results.epo_thresh;
 epo_select  = p.Results.epo_select;
 epo_len     = p.Results.epo_len;
 main_title  = p.Results.main_title;
+amp_ylabel  = p.Results.amp_ylabel;
 
 % Preallocate
 cleandxnz = [];
@@ -182,7 +184,7 @@ plotPSD = plot_ps2D(spectrum, ~isnan(Y));
 s5 = subplot('Position', [left bottom_low width_left-0.27 height_low]);
 plotEEG = yline(0, 'HandleVisibility','off');
 xline([0 epo_len], 'k:', 'HandleVisibility','off')
-legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
+legend(); ylabel(amp_ylabel); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
 title('EEG (brushed epochs)');  
 
 % Prepare topoplot
@@ -345,7 +347,7 @@ UIprops.Style    = 'toggle';
 isfilter = uicontrol(panelFILTER, UIprops, ...
     'string', 'Autofilter OFF (click to turn ON)', ...
     'position', [panelbutton_left D03h+D03v*2 panelbutton_width D03v], ...
-    'callback', @toggle_filter) 
+    'callback', @toggle_filter); 
 
 % Text fields panelOUT ("Automatic outlier detection")
 UIprops.Style               = 'text';
@@ -878,7 +880,7 @@ function cb_plotEEG( src, event )
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
-    legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
+    legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)');
 
     % Filter EEG Toggle
@@ -953,7 +955,7 @@ function cb_plotEEG_allchans( src, event )
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
-    legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
+    legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)')
 
     % Filter EEG Toggle
@@ -1011,7 +1013,7 @@ function cb_eeg_chans( src, event )
     handles.plotEEG  = s5.Children;  
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
-    legend(); ylabel('Amplitude (\muV)'); xlabel('time (s)')
+    legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)')
 
     % Filter EEG Toggle
@@ -1518,6 +1520,9 @@ else
     output.artndxnz     = handles.artndxnz;    % Corresponding logical matrix indicating which values died during artifact rejection
     
 end
+
+% Make logical
+output.artndxnz    = logical(output.artndxnz);
 close(f);
 
 
