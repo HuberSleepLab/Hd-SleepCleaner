@@ -61,21 +61,6 @@ fname_chanlocs = 'test129.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 
-
-% *** Variable names
-vname_eeg     = 'EEG';          
-                        % When your EEG is saved as a .mat file, it is 
-                        % assigned to a variable name inside the .mat file, 
-                        % e.g. "EEG". Define the variable name here.                         
-vname_visnum  = 'visnum';       
-                        % Same for sleep scoring file. If no sleep scoring 
-                        % is loaded, this value will be ignored.
-vname_visgood = 'visgood';     
-                        % Same for manual artifact rejection. If no manual 
-                        % artifact rejection is loaded, this value will be 
-                        % ignored.
-
-
 % *** EEGLAB path
 pname_eeglab = 'C:\PhDScripts\EEGlab2021.1';
                       % Path to EEGLAB toolbox. This is a free toolbox 

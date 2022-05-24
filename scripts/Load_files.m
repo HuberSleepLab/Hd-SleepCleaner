@@ -54,8 +54,27 @@ fileVIS = fullfile(pathVIS, nameVIS);        % Sleep scoring file
 
 if endsWith(fileVIS, '.mat')
     % .mat files
-    visnum = load(fileVIS, vname_visnum);    % Load sleep scoring
-    visnum = visnum.(vname_visnum)           % Rename sleep scoring
+    visnum = load(fileVIS);                  % Load sleep scoring
+    if isstruct(visnum)
+        if numel(fieldnames(visnum)) == 1
+            fn_visnum   = fieldnames(visnum);    % Fieldnames of structure  
+            visnum      = visnum.(fn_visnum{1}); % Access first subfield
+        end
+    end
+    % .mat file as a structure
+    if isstruct(visnum)                      % If your data is stored in 
+                                             % a matlab structure
+        fn_visnum = fieldnames(visnum);      % Fieldnames of structure    
+        for ifn = 1:numel(fn_visnum)
+            if all( ismember( stages, visnum.(fn_visnum{ifn}) ));
+                % Look for a subfield that contains a vector that contains
+                % all the sleep stages you want to look at
+                break
+            end
+        end
+        visnum = visnum.(fn_visnum{ifn});    % Get subfield containing 
+                                             % sleep scoring
+    end
     fprintf('** Load %s\n', nameVIS)
 elseif endsWith(fileVIS, '.vis')
     % .vis files
@@ -83,8 +102,13 @@ fileMAN = fullfile(pathMAN, nameMAN);         % Manual artifact rejection file
 
 if endsWith(fileMAN, '.mat')
     % .mat file
-    visgood = load(fileMAN, vname_visgood);   % Load manual artifact rejection
-    visgood = visgood.(vname_visgood)         % Rename manual artifact rejection
+    visgood = load(fileMAN);                  % Load manual artifact rejection
+    if isstruct(visgood) 
+        if numel(fieldnames(visgood)) == 1   
+            fn_visgood  = fieldnames(visgood);    % Fieldnames of structure  
+            visgood     = visgood.(fn_visgood{1});% Access first subfield
+        end
+    end    
     fprintf('** Load %s\n', nameMAN)    
 elseif endsWith(fileVIS, '.vis')
     %. vis file
@@ -106,7 +130,7 @@ end
 if ~isempty(visnum) & ~isempty(visgood) 
     % In case manual artifact rejection was loaded in 
     stages_of_interest = intersect(visgood, vissleep);  
-                                               % Clean sleep epochs 
+                                              % Clean sleep epochs 
 end
                          
 
@@ -115,7 +139,13 @@ end
 
 % *** Load EEG
 fprintf('** Load %s\n', nameEEG)      
-load(fullfile(pathEEG, nameEEG), vname_eeg)   % Load EEG structure
+EEG = load(fullfile(pathEEG, nameEEG));       % Load EEG structure
+if isstruct(EEG) 
+    if numel(fieldnames(EEG)) == 1   
+        fn_EEG = fieldnames(EEG);    % Fieldnames of structure  
+        EEG    = EEG.(fn_EEG{1});    % Access first subfield
+    end
+end 
 
 % *** Channel locations
 EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
