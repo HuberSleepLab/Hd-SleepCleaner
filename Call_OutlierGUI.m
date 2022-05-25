@@ -75,7 +75,7 @@ artndxn = outlier_routine(EEG, M2, artndxn, visnum, 10, 12, 10, ...
 
 % Save
 newART = avoid_overwrite(outART, pathART);
-save(newART, 'artndxn', 'visnum', 'visgood')
+save(fullfile(pathART, newART), 'artndxn', 'visnum', 'visgood')
 
 % Evaluation plots
 run('Evaluation_plots.m')
