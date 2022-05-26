@@ -21,6 +21,8 @@ run(fullfile(pmain, 'Configuration_OutlierGUI.m'))  % Calls configurations
 % *** Call script that loads files
 run('Load_files.m')
 
+% *** Preprocess EEG
+run('Preprocess_EEG.m')
 
 
 % ### Outlier routine (original reference)

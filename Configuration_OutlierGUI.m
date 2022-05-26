@@ -42,7 +42,7 @@ N3         = -3;        % Non-rem sleep 3
 N4         = -4;        % Non-rem sleep 4 (outdated)
 REM        =  0;        % Rem sleep
 W          =  1;        % Wake
-stages     = [N1, N2, N3, N4];  
+stages     = [N1, N2, N3, N4];
                         % In case you load in your sleep scoring file, the
                         % artifact rejectino routine will only be performed
                         % in epochs belonging to those sleep stages. All
@@ -73,6 +73,23 @@ H2 = 30;                % Higher band: upper limit
                         % raw EEG, as well as robustly standardized EEG.
                         % The higher frequency range will be screened only
                         % on robustly standardized EEG.
+
+
+% *** Preprocessing
+is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
+                        % before artifact correction. This low- and
+                        % high-pass filters your data (pass-band: 0.5 - 30 
+                        % Hz) and down-samples it to a lower sampling rate. 
+                        % Yes: 1, No: 0.
+srate_down = 125;       % Down-sample EEG to this sampling rate. Will only
+                        % be considered when is_preprocessing = 1.
+is_sweat = 0;           % Toggle whether you want to apply a stricter high-
+                        % pass filter to handle sweat artifacts. Sometimes
+                        % sleep EEG is full of sweat artifacts and many
+                        % epochs would be rejected due to high-amplitude,
+                        % low-frequency sinusoidal waves. The higher
+                        % cut-off removes frequencies until 0.9 Hz. 
+                        % Yes: 1, No: 0.
 
 
 % *** Filenames
