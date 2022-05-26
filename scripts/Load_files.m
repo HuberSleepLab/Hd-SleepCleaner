@@ -93,6 +93,24 @@ if ~isrow(visnum) & ~isempty(visnum)
     visnum = visnum';
 end
 
+% Recode scoring
+if ~isempty(visnum)
+    visnum( ismember(visnum, N1) )  = -1;    
+    visnum( ismember(visnum, N2))   = -2;    
+    visnum( ismember(visnum, N3))   = -3;    
+    visnum( ismember(visnum, N4))   = -4;    
+    visnum( ismember(visnum, W))    =  1;    
+    visnum( ismember(visnum, REM))  =  0;    
+
+    stages_recode = stages;
+    stages( ismember(stages_recode, N1) )  = -1;    
+    stages( ismember(stages_recode, N2))   = -2;    
+    stages( ismember(stages_recode, N3))   = -3;    
+    stages( ismember(stages_recode, N4))   = -4;    
+    stages( ismember(stages_recode, W))    =  1;    
+    stages( ismember(stages_recode, REM))  =  0;     
+end
+
 
 % ### Load manual artifact rejection
 % #####################################
