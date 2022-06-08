@@ -61,7 +61,6 @@ addParameter(p, 'epo_select', [], @isnumeric)        % Only show specific epochs
 addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
 addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
 addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Y label of EEG plot
-addParameter(p, 'main_ylabel', 'Values', @ischar)         % Frequency range for main plot title
 addParameter(p, 'main_ylabel', 'Values', @ischar)    % Frequency range for main plot title
 
 parse(p, varargin{:});
