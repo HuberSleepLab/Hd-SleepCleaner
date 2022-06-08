@@ -62,6 +62,7 @@ addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
 addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
 addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Y label of EEG plot
 addParameter(p, 'main_ylabel', 'Values', @ischar)         % Frequency range for main plot title
+addParameter(p, 'main_ylabel', 'Values', @ischar)    % Frequency range for main plot title
 
 parse(p, varargin{:});
     
@@ -90,7 +91,6 @@ markersize = 8;
 linewidth  = 0.1;
 fmax       = 30;  % Hz
 barthresh  = 97;  % Percent
-fontsize   = 12;
 
 % Load colormap
 L18 = [];
@@ -123,8 +123,14 @@ end
 %   Set up figure
 % ********************
 
+% Default font size (relative to screen height)
+screen_size = get(0 , 'ScreenSize');    % Screen size
+fontsize    = screen_size(4)*0.009;      % Font size equal to 0.9% of screen height
+
 % Open figure
-f = figure('color', 'w');
+f = figure('color', 'w', ...
+    'defaultAxesFontSize', fontsize, ...
+    'defaultTextFontSize', fontsize);
 
 % Set figure size
 set(gcf, ...
@@ -133,18 +139,19 @@ set(gcf, ...
     'Position', [0.02,0.1,1,0.82] ...
     );
 
-
-% ********************
-%   Prepare subplots
-% ********************
-
-% Variables
-left       = 0.10;
-bottom_low = 0.05;
-bottom_up  = 0.44;
-height_low = 0.33;
-height_up  = 0.54;
-width_left = 0.77;
+% Subplot locations
+fontnormsize    = .03;
+height1         = .28;
+height2         = .53;
+w1              = .13;
+h1              = .07;
+h2              = .43; 
+size_eeg        = [w1       h1                  .48     height1];
+size_topo       = [.61      h1                  .16     height1];
+size_power      = [.82      h1                  .16     height1];
+size_hypno      = [w1       h2                  .73     height2*0.2];
+size_main       = [w1       h2+height2*.2+.01   .73     height2*0.78];
+size_survival   = [.90      h2                  .08     height2];
 
 % Turn brush on
 brushf = brush;
@@ -153,13 +160,13 @@ set( brushf, ...
     'enable', 'on' );
 
 % Main plot
-s1 = subplot('Position', [left bottom_up+.12 width_left height_up-.12]);
+s1 = subplot('Position', size_main);
 p  = plot_main(X, Y);   
 
 % Hypnogram
 if ~isempty(sleep)
     xticklabels({});            
-    s2 = subplot('Position', [left bottom_up width_left 0.11]);
+    s2 = subplot('Position', size_hypno);
     bar(1:1:length(X), sleep); 
     yticks(-2.5:0.5);
     yticklabels({'N3', 'N2', 'N1', 'W'});
@@ -172,32 +179,28 @@ end
 xlabel('Epoch'); 
 
 % Barplot
-s3 = subplot('Position', [0.90 bottom_up 0.08 height_up]); 
-plot_bar(Y, zeros(size(Y)));
+s3 = subplot('Position', size_survival); 
+plot_bar(YNan, zeros(size(YNan)));
 % barh(repmat(100, 1, size(Y, 1)))
 % xlabel('(%) survived epochs'); 
 % ylabel('Channel ID');
 
 % Prepare spectral power
-s4 = subplot('Position', [left+0.72 bottom_low 0.16 height_low]);
+s4 = subplot('Position', size_power);
 plotPSD = plot_ps2D(spectrum, ~isnan(Y));
 
 % Prepare EEG
-s5 = subplot('Position', [left bottom_low width_left-0.27 height_low]);
+s5 = subplot('Position', size_eeg);
 plotEEG = yline(0, 'HandleVisibility','off');
 xline([0 epo_len], 'k:', 'HandleVisibility','off')
 legend(); ylabel(amp_ylabel); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
 title('EEG (brushed epochs)');  
 
 % Prepare topoplot
-s6 = subplot('Position', [left+0.51 bottom_low 0.16 height_low]);
+s6 = subplot('Position', size_topo);
 topoplotGUI(zeros(1, size(Y, 1)), [0 1], []);
 title('Topoplot (brushed epochs)');    
  
-% Aesthethics
-set(findobj(gcf,'type','axes'), ...
-    'FontSize', 10);
-
 
 % ********************
 %       Handles
@@ -241,7 +244,7 @@ guidata(f, handles)
 button_width_small  = 0.055;
 button_left_small   = 0.0125;
 button_height_small = 0.05;
-panel_width         = 0.065;
+panel_width         = 0.085;
 panel_left          = 0.0075;
 panelbutton_left    = 0.04;
 panelbutton_width   = 0.92;
@@ -282,7 +285,7 @@ D03v = 0.22; D03h = 0.04;
 % Push buttons panel01 ("Figure manipulation")
 uicontrol(f, UIprops, ...
     'string', 'Done', ...
-    'position', [button_left_small 0.045 button_width_small button_height_small], ...
+    'position', [button_left_small+button_width_small/6 0.06 button_width_small button_height_small], ...
     'BackgroundColor', [0 0.4470 0.7410], ...    
     'callback', @cb_done);  
 uicontrol(panel01, UIprops, ...
