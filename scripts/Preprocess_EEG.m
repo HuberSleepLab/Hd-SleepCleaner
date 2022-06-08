@@ -1,4 +1,9 @@
+% *** Preprocesses EEG Data
+
 if is_preprocessing
+
+    % ### % Low-pass filter
+    % ########################
 
     % FIR filter 35 Hz - kaiser (attenuated 50 Hz perfectly)
     srateFilt    = EEG.srate;
@@ -14,6 +19,9 @@ if is_preprocessing
     
     % Down sample
     EEG = pop_resample(EEG, srate_down);
+
+    % ### % High-pass filter
+    % ########################    
     
     % High-pass filter
     if ~is_sweat
