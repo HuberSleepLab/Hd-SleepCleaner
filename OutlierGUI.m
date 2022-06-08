@@ -179,8 +179,8 @@ xlabel('Epoch');
 
 % Barplot
 s3 = subplot('Position', size_survival); 
-plot_bar(YNan, zeros(size(YNan)));
-% barh(repmat(100, 1, size(Y, 1)))
+% plot_bar(YNan, zeros(size(YNan)));
+barh(repmat(100, 1, size(Y, 1)))
 % xlabel('(%) survived epochs'); 
 % ylabel('Channel ID');
 
