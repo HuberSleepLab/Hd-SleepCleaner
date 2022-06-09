@@ -32,7 +32,7 @@ end
     'Select file containing EEG structure', ...
     'Select .mat file with EEG structure', ...
     'MultiSelect', 'off');   
-[nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis','Scoring file (*.mat, *.vis)'}, ...
+[nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.txt','Scoring file (*.mat, *.vis, *.txt)'}, ...
     'Select file containing sleep scoring', ...
     fullfile(pathEEG, '..', '..', 'Select file containing sleep scoring'), ...    
     'MultiSelect', 'off');
@@ -76,13 +76,19 @@ if endsWith(fileVIS, '.mat')
                                              % sleep scoring
     end
     fprintf('** Load %s\n', nameVIS)
+
 elseif endsWith(fileVIS, '.vis')
     % .vis files
     [vistrack, vissymb, offs] = visfun.readtrac(fileVIS, 1);     % Load manual artifact rejection
     visnum                    = visfun.numvis(vissymb, offs);    % Load sleep scoring
     fprintf('** Load %s\n', nameVIS)
-% elseif endsWith(fileVIS, '.txt')
-% add case of sleep scoring saved as .txt file
+
+elseif endsWith(fileVIS, '.txt')
+    % .txt files
+    fid = fopen(fileVIS);
+    visnum = textscan(fid, repmat('%s', 1, txtcols), 'HeaderLines', num_header);  % Load scoring file
+    visnum = visnum{1, sleepcol};                                                 % Select column containing actual scoring
+    fclose(fid);
 else 
     visnum = [];  % No sleep scoring
 end
@@ -95,20 +101,39 @@ end
 
 % Recode scoring
 if ~isempty(visnum)
-    visnum( ismember(visnum, N1) )  = -1;    
-    visnum( ismember(visnum, N2))   = -2;    
-    visnum( ismember(visnum, N3))   = -3;    
-    visnum( ismember(visnum, N4))   = -4;    
-    visnum( ismember(visnum, W))    =  1;    
-    visnum( ismember(visnum, REM))  =  0;    
 
+    % Turn vector into cell of strings
+    % (and yes that makes life complicated. but some people have their
+    % scoring with letters ...)
+    if ismatrix(visnum)
+        visnum = cellfun(@num2str, num2cell(visnum), 'Uni', 0);
+    end
+
+    % recode sleep stages in visnum
+    cellstages  = {N1,   N2,   N3,   N4,   W,   REM,  A};
+    AASM        = {{-1}  {-2}  {-3}  {-4}  {1}  {0}   {1}};
+    for istage = 1:numel(cellstages)
+        ndx = cellfun(@(x) isequal(x, cellstages{istage}), visnum, 'Uni', 1);    
+        visnum(ndx) = AASM{istage};
+    end
+
+    % Sometimes last epoch codes "end", get rid of it
+    if isstr(visnum{end}) & isnumeric([visnum{1:end-1}])
+        visnum(end) = [];
+    end
+
+    % Turn to matrix
+    visnum = cell2mat(visnum);
+
+    % Recode stages
     stages_recode = stages;
-    stages( ismember(stages_recode, N1) )  = -1;    
-    stages( ismember(stages_recode, N2))   = -2;    
-    stages( ismember(stages_recode, N3))   = -3;    
-    stages( ismember(stages_recode, N4))   = -4;    
-    stages( ismember(stages_recode, W))    =  1;    
-    stages( ismember(stages_recode, REM))  =  0;     
+    for istage = 1:numel(cellstages)
+        ndx = cellfun(@(x) isequal(x, cellstages{istage}), stages_recode, 'Uni', 1);    
+        stages(ndx) = AASM{istage};
+    end    
+
+    % Turn to matrix
+    stages = cell2mat(stages);    
 end
 
 

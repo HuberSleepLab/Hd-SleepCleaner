@@ -36,13 +36,17 @@ scoringlen = 20;        % The artifact rejection works on epoched data.
                         % that spectral power will be computed in 4s
                         % snippets within one epoch with 50% epoch, so
                         % preferably choose an even number greater than 4s.
-N1         = -1;        % Non-rem sleep 1
-N2         = -2;        % Non-rem sleep 2
-N3         = -3;        % Non-rem sleep 3
-N4         = -4;        % Non-rem sleep 4 (outdated)
-REM        =  0;        % Rem sleep
-W          =  1;        % Wake
-stages     = [N1, N2, N3, N4];
+N1         = '-1';      % Non-rem sleep 1
+N2         = '-2';      % Non-rem sleep 2
+N3         = '-3';      % Non-rem sleep 3
+N4         = '-4';      % Non-rem sleep 4 (outdated)
+REM        =  '0';      % Rem sleep
+W          =  '1';      % Wake
+A          =  'A';      % Artifacts (some labs score epochs with artifacts 
+                        % with a distinct label, indicate it here. Other
+                        % labs score those epochs with the respective sleep
+                        % stage, then ignore this value.
+stages     = {N1, N2, N3, N4};
                         % In case you load in your sleep scoring file, the
                         % artifact rejectino routine will only be performed
                         % in epochs belonging to those sleep stages. All
@@ -50,6 +54,19 @@ stages     = [N1, N2, N3, N4];
                         % automatically. This can be useful in case you
                         % want to perform your analysis specific to certain
                         % sleep stages, e. g. NREM sleep.
+txtcols = 2;            % Only for when your scoring file is stored as a 
+                        % .txt file: to correctly load your scoring, please
+                        % indicate how many columns your .txt files has.
+                        % 1: one column, 2: two columns ...
+sleepcol = 2;           % Only for when your scoring file is stored as a 
+                        % .txt file: please indicate which column stores 
+                        % the actual sleep scoring. 
+num_header = 0;         % Only for when your scoring file is stored as a 
+                        % .txt file: in case your file has a header,
+                        % meaning that the first X rows are column names or
+                        % contain other explanations, indicate how many
+                        % header lines your file contains. Those will be
+                        % skipped when loading in your scoring file.
 
 % *** Manual artifact rejection
 manual     = 0;         % In case you have identified artifacts in advance
@@ -76,7 +93,7 @@ H2 = 30;                % Higher band: upper limit
 
 
 % *** Preprocessing
-is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
+is_preprocessing = 0;   % Toggle whether you want to preprocess your EEG 
                         % before artifact correction. This low- and
                         % high-pass filters your data (pass-band: 0.5 - 30 
                         % Hz) and down-samples it to a lower sampling rate. 
