@@ -21,7 +21,7 @@ chansID    = 1:128;     % The EEG data loaded in will be stored in a
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [107 113 127 128];
+chans_excl  = [107 113 126 127];
                         % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
