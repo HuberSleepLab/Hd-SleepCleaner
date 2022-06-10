@@ -8,7 +8,7 @@
 % *************************************************************************
 
 % *** General
-destination = 'eeg';    % Specify where you want the data saved:
+destination = 'G:\LSM\Data\Outliers';    % Specify where you want the data saved:
                         % 'scoring': same folder as the sleep scoring
                         % 'eeg': same folder as the EEG data
                         % 'artifacts': same folder as the artifacts
@@ -21,7 +21,7 @@ chansID    = 1:128;     % The EEG data loaded in will be stored in a
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [107 113 127 128];
+chans_excl  = [49 56 107 113 126 127];
                         % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
@@ -52,7 +52,7 @@ A          =  'A';      % Artifacts (some labs score epochs with artifacts
                         % with a distinct label, indicate it here. Other
                         % labs score those epochs with the respective sleep
                         % stage, then ignore this value.
-stages     = {N1, N2, N3, N4};
+stages     = {N1, N2, N3, N4, REM, W};
                         % In case you load in your sleep scoring file, the
                         % artifact rejectino routine will only be performed
                         % in epochs belonging to those sleep stages. All
