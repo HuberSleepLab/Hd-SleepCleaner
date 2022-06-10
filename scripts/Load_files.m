@@ -28,14 +28,25 @@ end
 
 
 % *** Grab files
+
+% EEG
 [nameEEG, pathEEG]  = uigetfile({'*.mat','EEG file (*.mat)'}, ...
     'Select file containing EEG structure', ...
     'Select .mat file with EEG structure', ...
     'MultiSelect', 'off');   
+
+if nameEEG == 0
+    error('No EEG file selected')
+end
+
+% sleep scoring
 [nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.txt','Scoring file (*.mat, *.vis, *.txt)'}, ...
     'Select file containing sleep scoring', ...
     fullfile(pathEEG, '..', '..', 'Select file containing sleep scoring'), ...    
     'MultiSelect', 'off');
+
+
+% previous artifact rejection
 [nameART, pathART]  = uigetfile({'*.mat','Artndxn file (*.mat)'}, ...
     'Do you want to modify an alerady existing artifact rejection output?', ...
     fullfile(pathEEG, '..', '..', 'Select an artndxn.mat file to modify, cancel otherwise'), ...
@@ -133,7 +144,7 @@ if ~isempty(visnum)
     end    
 
     % Turn to matrix
-    stages = cell2mat(stages);    
+    stages = cell2mat(stages);
 end
 
 
@@ -170,11 +181,7 @@ if ~isempty(visnum)
 else
     stages_of_interest = [];
 end
-if ~isempty(visnum) & ~isempty(visgood) 
-    % In case manual artifact rejection was loaded in 
-    stages_of_interest = intersect(visgood, vissleep);  
-                                              % Clean sleep epochs 
-end
+
                          
 
 % ### Load EEG
@@ -193,6 +200,21 @@ end
 % *** Channel locations
 EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
 
+% if no scoring provide it, make it based on EEG
+if isempty(visnum)
+    % create blanks, so it cleans without scoring
+    nEpochs = floor((size(EEG.data, 2)/EEG.srate)/scoringlen);
+    visnum = nan(1, nEpochs);
+    visgood = 1:nEpochs;
+    stages_of_interest = 1:nEpochs; 
+    vissleep = 1:nEpochs;
+end
+
+if ~isempty(visgood) 
+    % In case manual artifact rejection was loaded in 
+    stages_of_interest = intersect(visgood, vissleep);  
+                                          % Clean sleep epochs
+end
 
 % ### Load Artndxn
 % ###################
@@ -231,13 +253,12 @@ switch destination
         end
 end
 
-
-
 fprintf('** Artndxn will be saved here: %s\n', pathART)    
 
 % Evaluation plot name
 [~, namePLOT]   = fileparts(outART);        % Filename of plot  
 namePLOT        = [namePLOT, '.png'];       % Filename of plot  
+
 
 % *** Convert to single to save space
 visgood     = single(visgood);

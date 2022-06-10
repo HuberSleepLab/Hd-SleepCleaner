@@ -3,8 +3,8 @@ function artndxn = outlier_routine(EEG, M, artndxn, visnum, T1, T2, T3, varargin
 
     % Input parser
     p = inputParser;
-    addParameter(p, 'scoringlen', 20, @isnumeric)        
-    addParameter(p, 'stages_of_interest', [], @isnumeric)    
+    addParameter(p, 'scoringlen', 20, @isnumeric)
+    addParameter(p, 'stages_of_interest', [])  
     addParameter(p, 'chans_excl', [107 113 127 128], @isnumeric)        
 
     parse(p, varargin{:});
