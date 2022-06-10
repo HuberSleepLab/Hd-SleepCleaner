@@ -12,7 +12,7 @@ FFTepoch  = double([]);                             % stores power values per 20
 infchans = find(any(isinf(EEG), 2));
 if ~isempty(infchans)
     fprintf('Channels %g have a 0 line\n', infchans)
-    EEG(infchans, :) = linspace(0, 100, size(EEG, 2));
+    EEG(infchans, :) = repmat(linspace(0, 100, size(EEG, 2)), numel(infchans), 1);
 end
 
 % power computation

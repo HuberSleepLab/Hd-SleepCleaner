@@ -3,6 +3,7 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     % *********************************************************************
     % INPUT
     %
+    % EEG:     Your EEG structure
     % artndxn: Matrix containing output of semi-automatic artifact rejection
     %          That is a matrix (channels x epochs) with
     %          1: good epochs
@@ -20,41 +21,72 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %
     % OUTPUT
     %
-    % chansBAD:         Bad channels 
-    %                   These are those channels that are bad in all NREM
-    %                   epochs in which at least one other channel was good
+    % EEG0:             EEG Data with interpolated epochs
+    % artout:           A structure containing several subfields. They 
+    %                   contain the index of epochs or channels that 
+    %                   fullfill certain criteria.
+    %
+    % ** Subfields **
+    % cleanNREM:        Clean NREM epochs
+    %                   Artifact free sleep (N2 + N3) epochs, so epochs
+    %                   that were either clean in all channels or had some
+    %                   bad channels but they all could be interpolated
+    % allNREM:          All NREM epochs
+    %                   Sleep epochs (N2 + N3) with and without artifacts    
+    % cleanMANUAL       Clean NREM epochs from scoring
+    %                   Sleep epochs (N1 + N2 + N3) that are labeled as
+    %                   clean during sleep scoring    
     % chansEXCL:        Excluded channels
     %                   Excluded channels are channels that were not taken
     %                   into account when defining clean epochs, usually
     %                   the outer ring of the HD-EEG net because they are
     %                   often more noisy and as such you would loose more
     %                   data than maybe necessary, especially if you don't
-    %                   analyze the outer ring anyway
-    % cleanNREM:        Artifact free sleep (N2 + N3) epochs
+    %                   analyze the outer ring anyway    
+    % chansBAD:         Bad channels 
+    %                   These are those channels that are bad in all NREM
+    %                   epochs in which at least one other channel was good   
+    % interpNREM        Interpoalted epochs
+    %                   Epochs in which at least one channel was
+    %                   interpolated.    
+    % savedNREM         Saved NREM epochs
+    %                   Epochs that were interpolated and would have been
+    %                   rejected in classicCLEAN can be considered "saved"
+    % classicCLEAN:     Conservative clean epochs
+    %                   Epochs where all channels except those in chansEXCL
+    %                   were good according to artndxn. In other words, in
+    %                   case at least one channel was bad (except it
+    %                   belonged to chansEXCL), it would not be considered
+    %                   clean here.
+    % cleanN1           Clean N1 epochs    
+    %                   Artifact free N1 epochs, so epochs that were either
+    %                   clean in all channels or had some bad channels but 
+    %                   they all could be interpolated
+    % cleanN2           Clean N2 epochs    
+    % cleanN2           Clean N3 epochs    
     % cleanEPO:         Artifact free epochs (usually N1 + N2 + N3 but it
     %                   depends whether REM and WAKE were set to 0 during
-    %                   artifact correction).
-    % allNREM:          Sleep epochs (N2 + N3) with and without artifacts
-    % cleanMANUAL       Sleep epochs (N1 + N2 + N3) that are labeled as
-    %                   clean during sleep scoring
+    %                   artifact correction).    
+
+
 
     % Input parser
     p = inputParser;
     addParameter(p, 'visgood', [], @isnumeric)       % Epochs that are labelled as clean during sleep scoring (manual artifact rejection), corresponds to: find(sum(vistrack') == 0);
     addParameter(p, 'plotFlag', 0, @isnumeric)       % Do you want a plot?
     addParameter(p, 'exclChans', [43 48 49 56 63 68 73 81 88 94 99 107 113 119 120 125 126 127 128], @isnumeric) % Indices of channels to NOT consider when deciding which epochs are clean and which not (usually corresponds to the outer ring)
-    addParameter(p, 'ON_win', {}, @iscell)           % ON windows from SleepLoop
-    addParameter(p, 'OFF_win', {}, @iscell)          % OFF windows from SleepLoop
-    addParameter(p, 'T', [], @isnumeric)             % Trigger latencies from SleepLoop    
+    addParameter(p, 'WT', [], @isstruct)                % Structure window and trigger information
+    addParameter(p, 'scoringlen', 20, @isnumeric)    % Epoch length of scoring
+    addParameter(p, 'srate', 125, @isnumeric)        % Sampling rate
     parse(p, varargin{:});
         
     % Assign variables
     visgood     = p.Results.visgood;    
     chansEXCL   = p.Results.exclChans;
     plotFlag    = p.Results.plotFlag;
-    ON_win      = p.Results.ON_win;
-    OFF_win     = p.Results.OFF_win;
-    T           = p.Results.T;
+    WT          = p.Results.WT;
+    scoringlen  = p.Results.scoringlen;
+    srate       = p.Results.srate;
 
 
 
@@ -140,8 +172,8 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
         % Are theree too many bad neighbouring channels?
 
         % Data points
-        from = epo * 20 * EEG.srate - 20 * EEG.srate + 1;
-        to   = epo * 20 * EEG.srate;
+        from = epo * scoringlen * EEG.srate - scoringlen * EEG.srate + 1;
+        to   = epo * scoringlen * EEG.srate;
 
         % Extract data
         % EPO = pop_select(EEG, 'point', [from to]);
@@ -175,9 +207,11 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     %   Find clean NREM epochs
     % ***************************
 
+    % Channels that are constantly bad
+    chansDEAD = sum(artndxn, 2)' == 0;
 
     % Classically bad epochs
-    classicCLEAN = find( sum( artndxn( ~exclBIN, : )) == size(artndxn, 1) - sum(exclBIN) );
+    classicCLEAN = find( sum( artndxn( ~exclBIN & ~chansDEAD, : )) == size(artndxn, 1) - sum(exclBIN) );
 
     % Saved epochs are interpolated 
     savedEPO = workEPO;
@@ -204,14 +238,95 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     cleanNREM = setdiff( cleanNREM, rejEPO );
 
     % Epochs with at least 1 clean channel
-    cleanEPO= find( ...
+    cleanEPO = find( ...
         sum(artndxn) ~= 0 ...
         );
 
     % Remove rejected epochs during interpolation
-    cleanNREM = setdiff( cleanNREM, rejEPO );
+    cleanEPO = setdiff( cleanEPO, rejEPO );
+
+    % Clean sleep stages
+    cleanN1 = intersect( find(stages == -1), cleanNREM);    
+    cleanN2 = intersect( find(stages == -2), cleanNREM);
+    cleanN3 = intersect( find(stages == -3), cleanNREM);    
 
 
+    % *********************************
+    %      Clean W and T from SL2
+    % *********************************
+
+    if ~isempty(WT)
+
+        % *** Clean windows
+        % Windows to 20s epoch
+        epoON   = cellfun(@(x) unique(ceil(x/srate/scoringlen)), WT.W.ON.samples, 'Uni', 0);
+        epoOFF  = cellfun(@(x) unique(ceil(x/srate/scoringlen)), WT.W.OFF.samples, 'Uni', 0);
+               
+        % Artifact free windows
+        artout.WT.W.ON.cleanNREM        = find(cellfun(@(x) any(ismember(cleanNREM, x)), epoON));
+        artout.WT.W.OFF.cleanNREM       = find(cellfun(@(x) any(ismember(cleanNREM, x)), epoOFF));
+        artout.WT.W.Entire.cleanNREM    = intersect(artout.WT.W.ON.cleanNREM, artout.WT.W.OFF.cleanNREM);      
+
+
+        % *** Sleep stage of windows
+        % Sleep stage of each sample point
+        stages_samples = repmat(stages, scoringlen*srate, 1);
+        stages_samples = stages_samples(:);
+    
+        % Unique sleep stages
+        stages_lvl = unique(stages_samples);      
+
+        % If sleep scoring is a little shorter than data
+        ON_win  = cellfun(@(x) x(x <= length(stages_samples)), WT.W.ON.samples, 'Uni', 0);
+        OFF_win = cellfun(@(x) x(x <= length(stages_samples)), WT.W.OFF.samples, 'Uni', 0);
+     
+        % Sleep epoch majority in ON
+        counts                  = cellfun(@(x) histc(stages_samples(x), stages_lvl), ON_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3;   % Assign sleep stage where there was no data to "3" = "END"     
+        artout.WT.W.ON.sleep    = stages_lvl(ndx);
+
+        % Sleep epoch majority in OFF
+        counts                  = cellfun(@(x) histc(stages_samples(x), stages_lvl), OFF_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3;    
+        artout.WT.W.OFF.sleep   = stages_lvl(ndx);  
+
+        % Sleep epoch majority in ON + OFF
+        counts                  = cellfun(@(x, y) histc(stages_samples([x, y]), stages_lvl), ON_win, OFF_win, 'Uni', 0);
+        [~, ndx]                = cellfun(@max, counts);
+        ndx(find(cellfun(@(x) all(x == 0), counts))) = 3; 
+        artout.WT.W.Entire.sleep= stages_lvl(ndx);         
+
+
+        % *** Clean Trigger
+        epoT                    = ceil(WT.T.ON.samples/srate/scoringlen);
+        artout.WT.T.ON.cleanNREM= find(ismember(epoT, cleanNREM));   
+        artout.WT.T.ON.sleep    = stages_samples(WT.T.ON.samples);      
+
+
+        % Clean
+
+        % ***  Print windows  
+        fprintf('\n*** #W (#Clean) \n')    
+        fprintf('#ON: %d (%d)\n',  numel(WT.W.ON.samples),  numel(artout.WT.W.ON.cleanNREM))        
+        fprintf('#OFF: %d (%d)\n', numel(WT.W.OFF.samples), numel(artout.WT.W.OFF.cleanNREM))
+        fprintf('#W: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == 1),  numel(intersect(find(artout.WT.W.ON.sleep ==  1),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == 1), numel(intersect(find(artout.WT.W.OFF.sleep ==  1), artout.WT.W.OFF.cleanNREM)))      
+        fprintf('#REM: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == 0),  numel(intersect(find(artout.WT.W.ON.sleep ==  0),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == 0), numel(intersect(find(artout.WT.W.OFF.sleep ==  0), artout.WT.W.OFF.cleanNREM)))          
+        fprintf('#N1: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -1),  numel(intersect(find(artout.WT.W.ON.sleep ==  -1),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -1), numel(intersect(find(artout.WT.W.OFF.sleep ==  -1), artout.WT.W.OFF.cleanNREM)))
+         fprintf('#N2: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -2),  numel(intersect(find(artout.WT.W.ON.sleep ==  -2),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -2), numel(intersect(find(artout.WT.W.OFF.sleep ==  -2), artout.WT.W.OFF.cleanNREM)))
+        fprintf('#N3: ON: %d (%d) OFF: %d (%d)\n', ...
+            sum(artout.WT.W.ON.sleep == -3),  numel(intersect(find(artout.WT.W.ON.sleep ==  -3),  artout.WT.W.ON.cleanNREM)), ...
+            sum(artout.WT.W.OFF.sleep == -3), numel(intersect(find(artout.WT.W.OFF.sleep ==  -3), artout.WT.W.OFF.cleanNREM)))
+    end
 
 
     % *********************************
@@ -250,7 +365,10 @@ function [EEG0, artout] = interpEPO(EEG, artndxn, stages, varargin)
     artout.interpNREM  = find(interpBIN);
     artout.savedNREM   = find(savedBIN);    
     artout.classicCLEAN= classicCLEAN;    
-    % artout.cleanEPO    = cleanEPO;    
+    artout.cleanN1     = cleanN1;    
+    artout.cleanN2     = cleanN2;    
+    artout.cleanN3     = cleanN3;          
+    artout.cleanEPO    = cleanEPO;    
 
 
 
