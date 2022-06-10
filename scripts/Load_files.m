@@ -209,15 +209,30 @@ elseif isstr(nameVIS)
     % Sleep scoring exists
     [~, outART]     = fileparts(nameVIS);        % Filename of output file
     outART          = [outART, '_artndxn.mat'];  % Append filename
-    pathART         = pathVIS;                   % Output path
     artndxn         = [];
 else
     % No file
     [~, outART]     = fileparts(nameEEG);        % Filename of output file
     outART          = [outART, '_artndxn.mat'];  % Append filename
-    pathART         = pathEEG;                   % Output path
     artndxn         = [];    
 end
+
+% identify location to save output
+switch destination
+    case 'scoring'
+        pathART = pathVIS;
+    case 'eeg'
+        pathART = pathEEG;
+    case 'artifacts'
+    otherwise
+        pathART = destination;
+        if ~exist(destination, 'dir')
+            mkdir(destination)
+        end
+end
+
+
+
 fprintf('** Artndxn will be saved here: %s\n', pathART)    
 
 % Evaluation plot name
