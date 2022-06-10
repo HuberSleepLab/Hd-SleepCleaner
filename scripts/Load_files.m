@@ -6,7 +6,7 @@
 %  Important variables:
 
 %  EEG:         EEG structure containing your EEG data. This structure
-%               needs to have subfields correspondings to EEGLAB's EEG 
+%               needs to have subfields correspondings to EEGLAB's EEG
 %               structure.
 %  visnum:      A vector storing your sleep scoring
 %  visgood:     A vectore storing clean epochs from any form of previously
@@ -19,10 +19,11 @@
 
 % *** Add EEGLAB's functions correctly to MATLAB
 addedpaths = strsplit(path(), pathsep); % All paths in Matlab's set path
-if ~any(cellfun(@(x) contains(x, fullfile(pname_eeglab, 'plugins')), addedpaths))
-    
+% if ~any(cellfun(@(x) contains(x, fullfile(pname_eeglab, 'plugins')), addedpaths))
+if ~exist('pop_loadset', 'file')
     % Checks if EEGLAB has previously been called in this session. If not,
     % call EEGLAB and close the pop-up window.
+
     eeglab; close;
 end
 
@@ -32,17 +33,25 @@ end
 % EEG
 [nameEEG, pathEEG]  = uigetfile({'*.mat','EEG file (*.mat)'}, ...
     'Select file containing EEG structure', ...
-    'Select .mat file with EEG structure', ...
-    'MultiSelect', 'off');   
+    fullfile(eeg_source, 'Select .mat file with EEG structure'), ...
+    'MultiSelect', 'off');
 
 if nameEEG == 0
     error('No EEG file selected')
 end
 
 % sleep scoring
+Name = split(nameEEG, '_');
+scoring_path = fullfile(scoring_source, strjoin(Name(1:3), '_'));
+Content = deblank(string(ls(scoring_path)));
+if nnz(contains(Content, 'rh.vis'))==1
+    VIS = Content(contains(Content, 'rh.vis'));
+else
+    VIS = 'pick one';
+end
 [nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.txt','Scoring file (*.mat, *.vis, *.txt)'}, ...
     'Select file containing sleep scoring', ...
-    fullfile(pathEEG, '..', '..', 'Select file containing sleep scoring'), ...    
+    fullfile(scoring_path, VIS), ...
     'MultiSelect', 'off');
 
 
@@ -51,10 +60,12 @@ end
     'Do you want to modify an alerady existing artifact rejection output?', ...
     fullfile(pathEEG, '..', '..', 'Select an artndxn.mat file to modify, cancel otherwise'), ...
     'MultiSelect', 'off');
-[nameMAN, pathMAN]  = uigetfile({'*.mat','Manual artifact rejection file (*.mat)'}, ...
-    'Manual artifact rejection', ...
-    fullfile(pathEEG, '..', '..', 'Select file containing manual artifact rejection, cancel otherwise'), ...
-    'MultiSelect', 'off');
+nameMAN = 0;
+pathMAN = 0;
+% [nameMAN, pathMAN]  = uigetfile({'*.mat','Manual artifact rejection file (*.mat)'}, ...
+%     'Manual artifact rejection', ...
+%     fullfile(pathEEG, '..', '..', 'Select file containing manual artifact rejection, cancel otherwise'), ...
+%     'MultiSelect', 'off');
 
 
 % ### Load sleep scoring
@@ -68,14 +79,14 @@ if endsWith(fileVIS, '.mat')
     visnum = load(fileVIS);                  % Load sleep scoring
     if isstruct(visnum)
         if numel(fieldnames(visnum)) == 1
-            fn_visnum   = fieldnames(visnum);    % Fieldnames of structure  
+            fn_visnum   = fieldnames(visnum);    % Fieldnames of structure
             visnum      = visnum.(fn_visnum{1}); % Access first subfield
         end
     end
     % .mat file as a structure
-    if isstruct(visnum)                      % If your data is stored in 
-                                             % a matlab structure
-        fn_visnum = fieldnames(visnum);      % Fieldnames of structure    
+    if isstruct(visnum)                      % If your data is stored in
+        % a matlab structure
+        fn_visnum = fieldnames(visnum);      % Fieldnames of structure
         for ifn = 1:numel(fn_visnum)
             if all( ismember( stages, visnum.(fn_visnum{ifn}) ));
                 % Look for a subfield that contains a vector that contains
@@ -83,8 +94,8 @@ if endsWith(fileVIS, '.mat')
                 break
             end
         end
-        visnum = visnum.(fn_visnum{ifn});    % Get subfield containing 
-                                             % sleep scoring
+        visnum = visnum.(fn_visnum{ifn});    % Get subfield containing
+        % sleep scoring
     end
     fprintf('** Load %s\n', nameVIS)
 
@@ -100,7 +111,7 @@ elseif endsWith(fileVIS, '.txt')
     visnum = textscan(fid, repmat('%s', 1, txtcols), 'HeaderLines', num_header);  % Load scoring file
     visnum = visnum{1, sleepcol};                                                 % Select column containing actual scoring
     fclose(fid);
-else 
+else
     visnum = [];  % No sleep scoring
 end
 
@@ -124,7 +135,7 @@ if ~isempty(visnum)
     cellstages  = {N1,   N2,   N3,   N4,   W,   REM,  A};
     AASM        = {{-1}  {-2}  {-3}  {-4}  {1}  {0}   {1}};
     for istage = 1:numel(cellstages)
-        ndx = cellfun(@(x) isequal(x, cellstages{istage}), visnum, 'Uni', 1);    
+        ndx = cellfun(@(x) isequal(x, cellstages{istage}), visnum, 'Uni', 1);
         visnum(ndx) = AASM{istage};
     end
 
@@ -139,9 +150,9 @@ if ~isempty(visnum)
     % Recode stages
     stages_recode = stages;
     for istage = 1:numel(cellstages)
-        ndx = cellfun(@(x) isequal(x, cellstages{istage}), stages_recode, 'Uni', 1);    
+        ndx = cellfun(@(x) isequal(x, cellstages{istage}), stages_recode, 'Uni', 1);
         stages(ndx) = AASM{istage};
-    end    
+    end
 
     % Turn to matrix
     stages = cell2mat(stages);
@@ -157,16 +168,16 @@ fileMAN = fullfile(pathMAN, nameMAN);         % Manual artifact rejection file
 if endsWith(fileMAN, '.mat')
     % .mat file
     visgood = load(fileMAN);                  % Load manual artifact rejection
-    if isstruct(visgood) 
-        if numel(fieldnames(visgood)) == 1   
-            fn_visgood  = fieldnames(visgood);    % Fieldnames of structure  
+    if isstruct(visgood)
+        if numel(fieldnames(visgood)) == 1
+            fn_visgood  = fieldnames(visgood);    % Fieldnames of structure
             visgood     = visgood.(fn_visgood{1});% Access first subfield
         end
-    end    
-    fprintf('** Load %s\n', nameMAN)    
+    end
+    fprintf('** Load %s\n', nameMAN)
 elseif endsWith(fileVIS, '.vis')
     %. vis file
-    visgood = find(sum(vistrack') == manual); % Manual artifact detection     
+    visgood = find(sum(vistrack') == manual); % Manual artifact detection
 else
     visgood = [];   % No manual artifact detection
 end
@@ -182,20 +193,20 @@ else
     stages_of_interest = [];
 end
 
-                         
+
 
 % ### Load EEG
 % ################
 
 % *** Load EEG
-fprintf('** Load %s\n', nameEEG)      
+fprintf('** Load %s\n', nameEEG)
 EEG = load(fullfile(pathEEG, nameEEG));       % Load EEG structure
-if isstruct(EEG) 
-    if numel(fieldnames(EEG)) == 1   
-        fn_EEG = fieldnames(EEG);    % Fieldnames of structure  
+if isstruct(EEG)
+    if numel(fieldnames(EEG)) == 1
+        fn_EEG = fieldnames(EEG);    % Fieldnames of structure
         EEG    = EEG.(fn_EEG{1});    % Access first subfield
     end
-end 
+end
 
 % *** Channel locations
 EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
@@ -206,14 +217,14 @@ if isempty(visnum)
     nEpochs = floor((size(EEG.data, 2)/EEG.srate)/scoringlen);
     visnum = nan(1, nEpochs);
     visgood = 1:nEpochs;
-    stages_of_interest = 1:nEpochs; 
+    stages_of_interest = 1:nEpochs;
     vissleep = 1:nEpochs;
 end
 
-if ~isempty(visgood) 
-    % In case manual artifact rejection was loaded in 
-    stages_of_interest = intersect(visgood, vissleep);  
-                                          % Clean sleep epochs
+if ~isempty(visgood)
+    % In case manual artifact rejection was loaded in
+    stages_of_interest = intersect(visgood, vissleep);
+    % Clean sleep epochs
 end
 
 % ### Load Artndxn
@@ -225,8 +236,8 @@ fileART = fullfile(pathART, nameART);         % Load artndxn
 if endsWith(fileART, '.mat')
     % .mat file
     load(fileART, 'artndxn');                    % Load artifact rejection
-    fprintf('** Load %s\n', nameART)    
-    outART          = nameART;                   % Filename of output file        
+    fprintf('** Load %s\n', nameART)
+    outART          = nameART;                   % Filename of output file
 elseif isstr(nameVIS)
     % Sleep scoring exists
     [~, outART]     = fileparts(nameVIS);        % Filename of output file
@@ -236,7 +247,7 @@ else
     % No file
     [~, outART]     = fileparts(nameEEG);        % Filename of output file
     outART          = [outART, '_artndxn.mat'];  % Append filename
-    artndxn         = [];    
+    artndxn         = [];
 end
 
 % identify location to save output
@@ -253,11 +264,11 @@ switch destination
         end
 end
 
-fprintf('** Artndxn will be saved here: %s\n', pathART)    
+fprintf('** Artndxn will be saved here: %s\n', pathART)
 
 % Evaluation plot name
-[~, namePLOT]   = fileparts(outART);        % Filename of plot  
-namePLOT        = [namePLOT, '.png'];       % Filename of plot  
+[~, namePLOT]   = fileparts(outART);        % Filename of plot
+namePLOT        = [namePLOT, '.png'];       % Filename of plot
 
 
 % *** Convert to single to save space
