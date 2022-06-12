@@ -34,6 +34,13 @@ chans_excl  = [49 56 107 113 126 127];
                         % automatically as "bad", so that all epochs are
                         % labeled as "bad" = 0. They will not appear in the
                         % artifact removal procedure.
+outlier_types = {'devEEG', 'SWA_RZ', 'BETA_RZ', 'SWA'};
+                        % Choose which features to clean, and in which
+                        % order. Options include:
+                        % 'devEEG': deviation from EEG.
+                        % 'SWA': raw slow wave activity
+                        % 'SWA_RZ': robust z-scored slow wave activity.
+                        % 'BETA_RZ': robust z-scored beta power.
 
 % *** Sleep Scoring
 scoringlen = 20;        % The artifact rejection works on epoched data. 
