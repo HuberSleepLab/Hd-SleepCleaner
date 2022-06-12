@@ -10,7 +10,8 @@
 % *** General
 eeg_source = 'G:\LSM\Data\Preprocessed\Cutting\MAT\Sleep';
 scoring_source = 'G:\LSM\Data\Scoring\Sleep';
-destination = 'G:\LSM\Data\Outliers';    % Specify where you want the data saved:
+% destination = 'G:\LSM\Data\Outliers';    % Specify where you want the data saved:
+destination = 'eeg';
                         % 'scoring': same folder as the sleep scoring
                         % 'eeg': same folder as the EEG data
                         % 'artifacts': same folder as the artifacts
