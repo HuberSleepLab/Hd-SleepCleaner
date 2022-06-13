@@ -34,7 +34,7 @@ chans_excl  = [49 56 107 113 126 127];
                         % automatically as "bad", so that all epochs are
                         % labeled as "bad" = 0. They will not appear in the
                         % artifact removal procedure.
-outlier_types = {'SWA', 'devEEG', 'BETA_RZ'};
+outlier_types = {'voltEEG', 'SWA', 'devEEG', 'BETA_RZ'};
                         % Choose which features to clean, and in which
                         % order. Options include:
                         % 'devEEG': deviation from EEG.
