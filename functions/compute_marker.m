@@ -59,7 +59,7 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     % How much channel deviate from mean
     devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);
 
-    % raw voltage of each epoch/channel
+    % max raw voltage of each epoch/channel
     [voltEEG] = voltageEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);
 
     % Assign to output structure
