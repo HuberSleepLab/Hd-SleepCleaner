@@ -59,6 +59,9 @@ function artndxn = outlier_routine(EEG, M, artndxn, visnum, T1, T2, T3, outlier_
             case 'BETA_RZ'
                 type_title = sprintf('Power (%.1f - %.1f Hz) from robustly Z-Standardized EEG', M.H1, M.H2);
                 type_threshold = T2;
+            case 'voltEEG'
+                 type_title = 'Raw voltage';
+                type_threshold = inf;
             otherwise
                 error('incorrect outlier type')
         end
