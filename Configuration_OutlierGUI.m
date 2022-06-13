@@ -8,10 +8,10 @@
 % *************************************************************************
 
 % *** General
-eeg_source = 'G:\LSM\Data\Preprocessed\Cutting\MAT\Sleep';
-scoring_source = 'G:\LSM\Data\Scoring\Sleep';
-% destination = 'G:\LSM\Data\Outliers';    % Specify where you want the data saved:
-destination = 'eeg';
+eeg_source = 'E:\Data\Preprocessed\Cutting\MAT\TV';
+scoring_source = 'E:\Data\Scoring\';
+destination = 'E:\Data\Outliers\TV';    % Specify where you want the data saved:
+% destination = 'eeg';
                         % 'scoring': same folder as the sleep scoring
                         % 'eeg': same folder as the EEG data
                         % 'artifacts': same folder as the artifacts
@@ -34,7 +34,7 @@ chans_excl  = [49 56 107 113 126 127];
                         % automatically as "bad", so that all epochs are
                         % labeled as "bad" = 0. They will not appear in the
                         % artifact removal procedure.
-outlier_types = {'devEEG', 'SWA_RZ', 'BETA_RZ', 'SWA'};
+outlier_types = {'devEEG', 'BETA_RZ'};
                         % Choose which features to clean, and in which
                         % order. Options include:
                         % 'devEEG': deviation from EEG.
