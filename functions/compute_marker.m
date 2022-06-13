@@ -57,7 +57,10 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     BETA_RZ = select_band(FFTtot_RZ, freq, H1, H2, stages_of_interest, artndxn, chans_excl);    
     
     % How much channel deviate from mean
-    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn);   
+    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);
+
+    % max raw voltage of each epoch/channel
+    [voltEEG] = voltageEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);
 
     % Assign to output structure
     M.FFTtot    = single(FFTtot);
@@ -67,6 +70,7 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     M.BETA      = single(BETA);
     M.BETA_RZ   = single(BETA_RZ);
     M.devEEG    = single(devEEG);
+    M.voltEEG   = single(voltEEG);
     M.freq      = single(freq);
     M.L1        = single(L1);    
     M.L2        = single(L2);    
