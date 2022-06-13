@@ -19,7 +19,12 @@ pmain = fileparts(mfilename('fullpath'));           % Path to this script
 run(fullfile(pmain, 'Configuration_OutlierGUI.m'))  % Calls configurations
 
 % *** Call script that loads files
-run('Load_files.m')
+if exist('autoload', 'var') && autoload
+    run('auto_load_files.m')
+else
+    run('Load_files.m')
+end
+
 
 % *** Preprocess EEG
 run('Preprocess_EEG.m')

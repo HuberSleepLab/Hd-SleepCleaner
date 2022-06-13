@@ -51,7 +51,7 @@ if ~strcmp(inPath(end),filesep) %make sure path has a seperator at the end
 end
 
 %% check if file exists already and enumerate
-if exist([inPath inFile],'file') == 2 %file exists already, check for alternative
+if exist(fullfile(inPath, inFile),'file') == 2 %file exists already, check for alternative
     [~,shortFile,fileType] = fileparts(inFile); %exclude the file type
     checker = true; %check for alternate file names
     Cnt = startCount; %counter for file name

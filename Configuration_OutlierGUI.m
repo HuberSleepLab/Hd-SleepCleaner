@@ -17,6 +17,9 @@ destination = 'E:\Data\Outliers\TV';    % Specify where you want the data saved:
                         % 'artifacts': same folder as the artifacts
                         % any other string will be interpreted as a
                         % filepath.
+autoload = true;        % can either automatically load the next file 
+                        % (based on whether it's been done), or have the
+                        % user select one.
 chansID    = 1:128;     % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
