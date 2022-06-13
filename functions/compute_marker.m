@@ -57,7 +57,7 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     BETA_RZ = select_band(FFTtot_RZ, freq, H1, H2, stages_of_interest, artndxn, chans_excl);    
     
     % How much channel deviate from mean
-    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn);   
+    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);   
 
     % Assign to output structure
     M.FFTtot    = single(FFTtot);
