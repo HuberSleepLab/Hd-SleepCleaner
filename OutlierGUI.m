@@ -152,6 +152,11 @@ size_hypno      = [w1       h2                  .73     height2*0.2];
 size_main       = [w1       h2+height2*.2+.01   .73     height2*0.78];
 size_survival   = [.90      h2                  .08     height2];
 
+% Main plot location
+if isempty(epo_select)
+    size_main   = [w1       h2                  .73     height2];
+end
+
 % Turn brush on
 brushf = brush;
 set( brushf, ...
