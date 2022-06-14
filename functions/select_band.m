@@ -13,8 +13,11 @@ function SWA = select_band(FFTtot, freq, f1, f2, ndxSleep, artndxn, chansEXCL)
         SWA(~artndxn) = nan;
     end
 
-    % set muscle electrodes to nan
-    %if size(SWA, 1) == 128
-        SWA(chansEXCL, :) = nan;
-    %end
+    % Set excluded electrodes to NaN
+    for chEXCL = chansEXCL
+        if chEXCL <= size(SWA, 1)
+            % Only set to nan when included in matrix
+            SWA(chEXCL, :) = nan;
+        end
+    end
 end
