@@ -8,12 +8,6 @@
 % *************************************************************************
 
 % *** General
-destination = 'eeg';    % Specify where you want the data saved:
-                        % 'scoring': same folder as the sleep scoring
-                        % 'eeg': same folder as the EEG data
-                        % 'artifacts': same folder as the artifacts
-                        % any other string will be interpreted as a
-                        % filepath.
 chansID    = 1:128;     % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
@@ -122,10 +116,22 @@ fname_chanlocs = 'test129.loc'; % File storing channel locations.
 
 % *** EEGLAB path
 pname_eeglab = 'C:\PhDScripts\EEGlab2021.1';
-                      % Path to EEGLAB toolbox. This is a free toolbox 
-                      % functions of which are used in this GUI. Can be 
-                      % downloaded here: https://eeglab.org/download/
-addpath(pname_eeglab);% Add EEGLAB to paths
+                        % Path to EEGLAB toolbox. This is a free toolbox 
+                        % functions of which are used in this GUI. Can be 
+                        % downloaded here: https://eeglab.org/download/
+addpath(pname_eeglab);  % Add EEGLAB to paths
+
+% *** Output path
+destination = 'eeg';    % Specify where you want the final output saved. 
+                        % You can either choose one of the following
+                        % options or give a specific filepath. A filepath
+                        % example would be 'C:\PhDScripts\SleepEEG\'.
+                        % Options are:
+                        % 'eeg':        same folder as EEG data                        
+                        % 'scoring':    same folder as sleep scoring
+                        % 'artndxn':    same folder as artndxn
+                        % Any other string will be interpreted as a
+                        % filepath.
 
 
 % *** Add helper functions

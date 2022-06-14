@@ -223,7 +223,7 @@ switch destination
         pathART = pathVIS;
     case 'eeg'
         pathART = pathEEG;
-    case 'artifacts'
+    case 'artndxn'
     otherwise
         pathART = destination;
         if ~exist(destination, 'dir')
