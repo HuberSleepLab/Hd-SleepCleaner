@@ -22,7 +22,12 @@ function [devEEG] = deviationEEG(EEG, srate, winlen, artndxn, chans_excl)
     end
 
 
-    % set to nan all channels to exclude
-    devEEG(chans_excl, :) = nan;
+    % Set excluded electrodes to NaN
+    for ch = chans_excl
+        if ch <= size(devEEG, 1)
+            % Only set to nan when included in matrix
+            devEEG(ch, :) = nan;
+        end
+    end
 
 end
