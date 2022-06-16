@@ -5,6 +5,11 @@ function SWA = select_band(FFTtot, freq, f1, f2, ndxSleep, artndxn, chansEXCL)
     % SWA = squeeze(mean(SWA, 2));
     SWA = squeeze( sum(SWA, 2) * unique(diff(freq)));
 
+    % One channel only
+    if ~isrow(SWA) & size(SWA, 2) == 1
+        SWA = SWA';
+    end
+
     if ~isempty(ndxSleep)
         SWA(:, setdiff( 1:end, ndxSleep ))  = nan;
     end
