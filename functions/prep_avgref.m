@@ -1,11 +1,9 @@
-function [EEG] = prep_avgref(EEG, srate, winlen, artndxn)
+function [EEG] = prep_avgref(EEG, srate, chansID, winlen, artndxn)
 
 % define variables and pre-allocate
-nChan     = size(EEG,1);                            % chanenls
+nChan     = size(EEG,1);                            % channels
 nPnts     = size(EEG,2);                            % sample points
 nEpo20    = floor(nPnts/srate/winlen);              % number of 20s epochs
-FFTtot    = double(NaN(nChan, 161, nEpo20));        % stores final power values
-FFTepoch  = double([]);                             % stores power values per 20s epoch 
 
 % Original EEG
 EEG0 = EEG;
@@ -28,7 +26,7 @@ for epo = 1:nEpo20
 end  
 
 % Average reference
-chansAVG = setdiff(1:128, [49 56 107 113, 125, 126, 127, 128, 48, 119, 43, 63, 68, 73, 81, 88, 94, 99, 120]);
+chansAVG = setdiff(chansID, [49 56 107 113, 125, 126, 127, 128, 48, 119, 43, 63, 68, 73, 81, 88, 94, 99, 120]);
 EEG      = EEG - mean(EEG(chansAVG, :), 1, 'omitnan');
 
 % Insert values again
