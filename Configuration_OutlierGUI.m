@@ -119,7 +119,7 @@ pname_eeglab = 'C:\Users\vakas\GitHub\eeglab';
                         % Path to EEGLAB toolbox. This is a free toolbox 
                         % functions of which are used in this GUI. Can be 
                         % downloaded here: https://eeglab.org/download/
-addpath(genpath(pname_eeglab));  % Add EEGLAB to paths
+addpath(pname_eeglab);  % Add EEGLAB to paths
 
 % *** Output path
 destination = 'eeg';    % Specify where you want the final output saved. 
