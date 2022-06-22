@@ -201,7 +201,9 @@ plotPSD = plot_ps2D(spectrum, ~isnan(Y));
 % Prepare EEG
 s5 = subplot('Position', size_eeg);
 plotEEG = yline(0, 'HandleVisibility','off');
-xline([0 epo_len], 'k:', 'HandleVisibility','off')
+%xline([0 epo_len], 'k:', 'HandleVisibility','off')
+xline(0, 'k:', 'HandleVisibility','off')
+xline(epo_len, 'k:', 'HandleVisibility','off')
 legend(); ylabel(amp_ylabel); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
 title('EEG (brushed epochs)');  
 
@@ -914,7 +916,9 @@ function cb_plotEEG( src, event )
     end
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
-    xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    %xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    xline(0, 'k:', 'HandleVisibility','off')
+    xline(epo_len, 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)');
 
@@ -991,7 +995,9 @@ function cb_plotEEG_allchans( src, event )
     end
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
-    xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    %xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    xline(0, 'k:', 'HandleVisibility','off')
+    xline(epo_len, 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)')
 
@@ -1054,7 +1060,9 @@ function cb_eeg_chans( src, event )
     end
     handles.plotEEG  = s5.Children;  
     handles.firstfilter = 1;
-    xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    %xline([0 epo_len], 'k:', 'HandleVisibility','off')
+    xline(0 , 'k:', 'HandleVisibility','off')
+    xline(epo_len, 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (brushed epochs)')
 

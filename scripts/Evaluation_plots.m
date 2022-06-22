@@ -4,12 +4,15 @@
 % Compute SWA
 SWA01  = select_band(M1.FFTtot, M1.freq, L1, L2, stages_of_interest, [], chans_excl);         % Before artifact rejection
 SWA02  = select_band(M1.FFTtot, M1.freq, L1, L2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
-SWA03  = select_band(M2.FFTtot, M2.freq, L1, L2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
 
 % Compute averages
 SWA01x = mean(SWA01, 2, 'omitnan');
 SWA02x = mean(SWA02, 2, 'omitnan');
-SWA03x = mean(SWA03, 2, 'omitnan');
+
+if EEG.nbchan > 1
+    SWA03  = select_band(M2.FFTtot, M2.freq, L1, L2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
+    SWA03x = mean(SWA03, 2, 'omitnan');    
+end
 
 % *** Open figure
 figure('color', 'w') 
@@ -29,9 +32,11 @@ ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
 subplot('Position', [0.40 0.38 width height ]);
 plot(SWA02', 'k.:')
 
-subplot('Position', [0.40 0.08 width height ]);
-plot(SWA03', 'k.:')
-xlabel('Epoch')
+if EEG.nbchan > 1
+    subplot('Position', [0.40 0.08 width height ]);
+    plot(SWA03', 'k.:')
+    xlabel('Epoch')
+end
 
 % Load colormap
 load('L18.mat');

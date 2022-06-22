@@ -8,14 +8,14 @@
 % *************************************************************************
 
 % *** General
-chansID    = 1:128;     % The EEG data loaded in will be stored in a 
+chansID    = 1; %1:128;     % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
                         % rejection on (the rows in your matrix). The 
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [107 113 126 127];
+chans_excl  = [];%[107 113 126 127];
                         % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
@@ -27,7 +27,7 @@ chans_excl  = [107 113 126 127];
                         % artifact removal procedure.
 
 % *** Sleep Scoring
-scoringlen = 20;        % The artifact rejection works on epoched data. 
+scoringlen = 30; %20;        % The artifact rejection works on epoched data. 
                         % Define here how long those data segments should
                         % be. Usually it makes sense to choose the same
                         % epoch length as during sleep scoring (in case you
@@ -36,17 +36,17 @@ scoringlen = 20;        % The artifact rejection works on epoched data.
                         % that spectral power will be computed in 4s
                         % snippets within one epoch with 50% epoch, so
                         % preferably choose an even number greater than 4s.
-N1         = '-1';      % Non-rem sleep 1
-N2         = '-2';      % Non-rem sleep 2
-N3         = '-3';      % Non-rem sleep 3
-N4         = '-4';      % Non-rem sleep 4 (outdated)
-REM        =  '0';      % Rem sleep
-W          =  '1';      % Wake
-A          =  'A';      % Artifacts (some labs score epochs with artifacts 
+N1         = '1'; %'-1';      % Non-rem sleep 1
+N2         = '2'; %'-2';      % Non-rem sleep 2
+N3         = '3'; %'-3';      % Non-rem sleep 3
+N4         = '-2'; %'-4';      % Non-rem sleep 4 (outdated)
+REM        = '4';% '0';      % Rem sleep
+W          = '0';% '1';      % Wake
+A          = '-1';% 'A';      % Artifacts (some labs score epochs with artifacts 
                         % with a distinct label, indicate it here. Other
                         % labs score those epochs with the respective sleep
                         % stage, then ignore this value.
-stages     = {N1, N2, N3, N4};
+stages     = {N1, N2, N3};
                         % In case you load in your sleep scoring file, the
                         % artifact rejectino routine will only be performed
                         % in epochs belonging to those sleep stages. All
@@ -93,12 +93,12 @@ H2 = 30;                % Higher band: upper limit
 
 
 % *** Preprocessing
-is_preprocessing = 0;   % Toggle whether you want to preprocess your EEG 
+is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
                         % before artifact correction. This low- and
                         % high-pass filters your data (pass-band: 0.5 - 30 
                         % Hz) and down-samples it to a lower sampling rate. 
                         % Yes: 1, No: 0.
-srate_down = 125;       % Down-sample EEG to this sampling rate. Will only
+srate_down = 250; %125;       % Down-sample EEG to this sampling rate. Will only
                         % be considered when is_preprocessing = 1.
 is_sweat = 0;           % Toggle whether you want to apply a stricter high-
                         % pass filter to handle sweat artifacts. Sometimes
@@ -110,16 +110,16 @@ is_sweat = 0;           % Toggle whether you want to apply a stricter high-
 
 
 % *** Filenames
-fname_chanlocs = 'test129.loc'; % File storing channel locations.
+fname_chanlocs = 'locs1.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 
 % *** EEGLAB path
-pname_eeglab = 'C:\PhDScripts\EEGlab2021.1';
+pname_eeglab = 'C:\Users\vakas\GitHub\eeglab';
                         % Path to EEGLAB toolbox. This is a free toolbox 
                         % functions of which are used in this GUI. Can be 
                         % downloaded here: https://eeglab.org/download/
-addpath(pname_eeglab);  % Add EEGLAB to paths
+addpath(genpath(pname_eeglab));  % Add EEGLAB to paths
 
 % *** Output path
 destination = 'eeg';    % Specify where you want the final output saved. 
