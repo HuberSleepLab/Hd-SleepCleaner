@@ -135,7 +135,7 @@ if ~isempty(visnum)
     end    
 
     % Turn to matrix
-    stages = cell2mat(stages);    
+    stages = cell2mat(stages); 
 end
 
 
@@ -194,6 +194,17 @@ end
 
 % *** Channel locations
 EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
+
+% % Check number of epochs == scoring length
+% if ~isempty(visnum)
+%     nepo = floor(size(EEG.data, 2) / scoringlen / EEG.srate);
+%     if nepo ~= numel(visnum)
+%         fprintf('EEG data has %d epochs\n', nepo)
+%         fprintf('Sleep scoring has %d epochs\n', numel(visnum))
+%         error('EEG data does not have the same number of epochs as provided sleep scoring file.')
+%     end
+% end
+
 
 
 % ### Load Artndxn
