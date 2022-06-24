@@ -86,8 +86,8 @@ save(fullfile(pathART, newART), 'artndxn', 'visnum', 'visgood')
 % Evaluation plots
 run('Evaluation_plots.m')
 print(gcf, fullfile(pathART, namePLOT), '-dpng')
-
-
+% 
+% 
 % % *** Call for debugging
 % [ manoutSWA ] = OutlierGUI(M1.SWA, ...
 %     'sleep', visnum, ...
@@ -99,4 +99,4 @@ print(gcf, fullfile(pathART, namePLOT), '-dpng')
 %     'epo_select', stages_of_interest, ...             
 %     'epo_len', scoringlen, ...
 %     'epo_thresh', 8);
-            
+%             

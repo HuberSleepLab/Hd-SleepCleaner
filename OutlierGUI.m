@@ -1271,7 +1271,9 @@ function cb_restore_brushdata( src, event )
             handles.brushNDX{ichan}     = tmp_brushNDX(~ismember(tmp_brushNDX, bdp));
     
             % Remove from automatically detected removals
-            handles.channel_outlier(ichan, bdp) = logical(0);    
+            if size(handles.Y, 1) > 1
+                handles.channel_outlier(ichan, bdp) = logical(0);    
+            end
             handles.movavg_outlier(ichan, bdp)  = logical(0);    
         end
     end        
