@@ -59,8 +59,8 @@ artndxn = outlier_routine(EEG, M1, artndxn, visnum, 8, 10, 8, ...
 % % Median reference
 % EEG.data = EEG.data - median(EEG.data);
 
-% Average reference only when number of channels > 1
-if EEG.nbchan > 1
+% Average reference only when number of channels > 2
+if EEG.nbchan > 2
 
     % Set artifacts to nan and then average reference
     [EEG.data] = prep_avgref(EEG.data, EEG.srate, chansID, scoringlen, artndxn);

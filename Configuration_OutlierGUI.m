@@ -8,7 +8,7 @@
 % *************************************************************************
 
 % *** General
-chansID    = 1; %1:128;     % The EEG data loaded in will be stored in a 
+chansID    = 1:2; %1:128;     % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
                         % rejection on (the rows in your matrix). The 
@@ -110,7 +110,7 @@ is_sweat = 0;           % Toggle whether you want to apply a stricter high-
 
 
 % *** Filenames
-fname_chanlocs = 'locs1.loc'; % File storing channel locations.
+fname_chanlocs = 'locs2.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 

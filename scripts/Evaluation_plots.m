@@ -9,7 +9,7 @@ SWA02  = select_band(M1.FFTtot, M1.freq, L1, L2, stages_of_interest, artndxn, ch
 SWA01x = mean(SWA01, 2, 'omitnan');
 SWA02x = mean(SWA02, 2, 'omitnan');
 
-if EEG.nbchan > 1
+if EEG.nbchan > 2
     SWA03  = select_band(M2.FFTtot, M2.freq, L1, L2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
     SWA03x = mean(SWA03, 2, 'omitnan');    
 end
@@ -32,7 +32,7 @@ ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
 subplot('Position', [0.40 0.38 width height ]);
 plot(SWA02', 'k.:')
 
-if EEG.nbchan > 1
+if EEG.nbchan > 2
     subplot('Position', [0.40 0.08 width height ]);
     plot(SWA03', 'k.:')
     xlabel('Epoch')
@@ -43,7 +43,7 @@ load('L18.mat');
 
 
 % *** Topoplot overnight SWA
-if EEG.nbchan > 1
+if EEG.nbchan > 2
     subplot('Position', [0.001 0.68 width+0.05 height ]);
     topoplot( SWA01x, EEG.chanlocs, ...
         'plotchans', 1:numel(SWA01x), ...
@@ -120,7 +120,7 @@ barh(prcnt_epolow, 'r', 'DisplayName', 'Bad channels');
 % Make pretty
 xlim([min([prcnt_cleanEPO; cleanThresh])*100 100]); xlabel(sprintf('Proportion of clean epochs (%%)\nin sleep stages %s', num2str(stages))); ylabel('Channel ID'); yticks(4:4:size(EEG.data, 1)); 
 plot(repmat(cleanThresh, 1, length(prcnt_cleanEPO)), 1:length(prcnt_cleanEPO), ':', 'LineWidth', 2, 'DisplayName', 'Threshold')
-if EEG.nbchan > 1
+if EEG.nbchan > 2
     ylim([1 size(artndxn, 1)]);
 end
 % legend('Location', 'North', 'Orientation','horizontal');    
