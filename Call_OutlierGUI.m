@@ -29,6 +29,9 @@ end
 % *** Preprocess EEG
 run('Preprocess_EEG.m')
 
+% remove eye artifacts
+EEG = removeEyes(EEG);
+pause(1)
 
 % ### Outlier routine (original reference)
 % ###########################################

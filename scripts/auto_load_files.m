@@ -198,7 +198,11 @@ if isstruct(EEG)
 end
 
 % *** Channel locations
-EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
+if isempty(EEG.chanlocs)
+    EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
+end
+
+EEG = eeg_checkset(EEG);
 
 % if no scoring provide it, make it based on EEG
 if isempty(visnum)

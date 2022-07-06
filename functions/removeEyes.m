@@ -1,7 +1,7 @@
 function NewEEG = removeEyes(EEG)
 % extra step that uses ICA to remove eye artifacts from data. A window pops
 % up, asking the user to input the time window to use for identifying
-% blinks with ICA.
+% blinks with ICA. You need to download fastica first: http://research.ics.aalto.fi/ica/fastica/code/dlcode.html
 
 EEG.data = double(EEG.data);
 
@@ -10,9 +10,9 @@ EEG.data = double(EEG.data);
 Pix = get(0,'screensize');
 
 % plot pre and post data
-eegplot(EEG.data, 'spacing', 20, 'srate', EEG.srate, ...
+eegplot(EEG.data, 'spacing', 50, 'srate', EEG.srate, ...
     'winlength', 60, 'position', [0 0 Pix(3) Pix(4)*.97],  'eloc_file', EEG.chanlocs)
-
+clc
 T = input('Identify around a minute of clean data with blinks: ');
 close
 
@@ -48,8 +48,18 @@ NewEEG.event = EEG.event;
 NewEEG.icaact = [];
 
 %%% remove components
+disp(['Removing ', num2str(nnz(Eyes)), ' components'])
 NewEEG = pop_subcomp(NewEEG, find(Eyes));
 
+figure('Units','normalized', 'Position',[0 0 1 .3])
+t = linspace(0, EEG.pnts/EEG.srate, EEG.pnts);
+hold on
+plot(t, EEG.data(8, :))
+plot(t, NewEEG.data(8, :))
+xlim([0 60])
+
+
+clc
 
 % DEBUG and check output:
 % pop_prop(shortEEG, 0, find(Eyes), gcbo, { 'freqrange', [1 40]});
