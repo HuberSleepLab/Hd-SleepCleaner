@@ -30,14 +30,15 @@ end
 run('Preprocess_EEG.m')
 
 % remove eye artifacts
-EEG = removeEyes(EEG);
-pause(1)
+[EEG, chans_excl] = removeEyes(EEG, chans_excl);
+
 
 % ### Outlier routine (original reference)
 % ###########################################
 
 % Work with pre-defined channels
 EEG = pop_select(EEG, 'channel', chansID);
+
 
 % Compute marker (original reference)
 [M1] = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_excl, ...
