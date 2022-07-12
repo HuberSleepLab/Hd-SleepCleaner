@@ -102,7 +102,7 @@ run('Evaluation_plots.m')
 print(gcf, fullfile(pathART, namePLOT), '-dpng')
 
 
-disp(['Finished in ', num2str(toc), 's'])
+disp(['Finished in ', num2str(toc/60), 'min'])
 
 % % *** Call for debugging
 % [ manoutSWA ] = OutlierGUI(M1.SWA, ...
