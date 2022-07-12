@@ -95,6 +95,12 @@ barthresh  = 97;  % Percent
 L18 = [];
 load('L18.mat');
 
+% If one channel only, make sure that it's a row vector
+if ~isrow(Y) & size(Y, 2) == 1
+    Y       = Y';
+    topo    = topo';
+end
+
 
 % ********************
 %   Specific epochs 
@@ -115,7 +121,6 @@ if ~isempty(epo_select)
     % Select specified EEG data
     samples = cell2mat(arrayfun(@(x) x*epo_len*srate - epo_len*srate+1 : x*epo_len*srate, epo_select, 'Uni', 0));
     EEG     = EEG(:, samples);
-
 end
 
 % ********************
@@ -151,6 +156,11 @@ size_power      = [.82      h1                  .16     height1];
 size_hypno      = [w1       h2                  .73     height2*0.2];
 size_main       = [w1       h2+height2*.2+.01   .73     height2*0.78];
 size_survival   = [.90      h2                  .08     height2];
+
+% Main plot location
+if isempty(epo_select)
+    size_main   = [w1       h2                  .73     height2];
+end
 
 % Turn brush on
 brushf = brush;
@@ -440,11 +450,11 @@ uicontrol(panelFILTER, UIprops, ...
 UIprops.Style    = 'edit';
 UIprops.fontsize = 0.4;
 low_cutoff = uicontrol(panelFILTER, UIprops, ...
-    'string', sprintf('> %.1f', 0), ...
+    'string', sprintf('%.1f', 0.01), ...
     'position', [panelbutton_left 0.02 panelbutton_width/2 0.25], ...
     'callback', @edit_cutoff); 
 up_cutoff = uicontrol(panelFILTER, UIprops, ...
-    'string', sprintf('< %.1f', srate/3), ...
+    'string', sprintf('%.1f', srate/2), ...
     'position', [panelbutton_left+panelbutton_width/2 0.02 panelbutton_width/2 0.25], ...
     'callback', @edit_cutoff); 
 
@@ -541,8 +551,8 @@ function hpfilter = build_hpfilter( lc )
     % Build filter
     hpfilter = designfilt( ...
         'highpassiir', ...
-        'StopbandFrequency', lc*0.5, ...
-        'PassbandFrequency', lc, ...
+        'StopbandFrequency', lc, ...
+        'PassbandFrequency', lc*1.25, ...
         'StopbandAttenuation', 60, ...
         'PassbandRipple', 0.1, ...
         'SampleRate', srate, ...
@@ -554,8 +564,8 @@ function lpfilter = build_lpfilter( hc )
     % Build filter
     lpfilter = designfilt( ...
         'lowpassiir', ...
-        'StopbandFrequency', hc*1.5, ...
-        'PassbandFrequency', hc, ...
+        'StopbandFrequency', hc, ...
+        'PassbandFrequency', hc*0.9, ...
         'StopbandAttenuation', 60, ...
         'PassbandRipple', 0.1, ...
         'SampleRate', srate, ...
@@ -605,6 +615,9 @@ function plotPSD = plot_ps2D(ps3D, clean2D)
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    if all(isnan(rainbow))
+        rainbow = [0 0 0];
+    end
     colororder(s4, rainbow);   
 end
 
@@ -629,7 +642,7 @@ end
 function cb_remove_powerspectrum( src, event )
 
     handles     = guidata(src);                                                  % Grab handles  
-    brushNDX    = cellfun(@find, get(handles.plotPSD, 'BrushData'), 'Uni', 0);   % Gather brushed data
+    brushNDX    = get_handles(handles, 'plotPSD', 'BrushData', 1);  % Brushed data    
 
     % Set brushed data to NaN
     for ichan = 1:numel(brushNDX)
@@ -647,7 +660,7 @@ function cb_show_powerspectrum( src, event )
     % Highlight channels selected in power spectrum in main plot
 
     handles     = guidata(src);                                                  % Grab handles  
-    brushNDX    = cellfun(@find, get(handles.plotPSD, 'BrushData'), 'Uni', 0);   % Gather brushed data
+    brushNDX    = get_handles(handles, 'plotPSD', 'BrushData', 1);  % Brushed data    
     chans       = find(~cellfun(@isempty, brushNDX))';                            % Selected channels
 
     % Highlight channels in main plot
@@ -676,11 +689,13 @@ function plot_bar(Y0, artndxnz)
     % Compute astethics
     xmin = min([prc1; 95]) - 1;
     ymax = length(prc1);
+    if ymax ~= 1
+        ylim( [1 ymax] )
+    end
     
     % Make pretty
     xlim( [xmin 100 ] )
     yticks( [4:4:ymax] )
-    ylim( [1 ymax] )
     xlabel('(%) survived epochs') 
     ylabel('Channel ID')     
     grid on
@@ -741,6 +756,12 @@ function cb_topo_night( src, event )
     % Callback:
     % Plot topoplot
 
+    % Original topoplot
+    vTopo1 = mean(handles.topo0, 2, 'omitnan');
+    if numel(vTopo1) == 1
+        return
+    end
+
     % Create new figure
     figure('color', 'w', ...
         'units', 'normalized', ...
@@ -748,8 +769,7 @@ function cb_topo_night( src, event )
         'Position', [0.3 0.4 0.4 0.25] ...
         ); 
  
-    % Original topoplot
-    vTopo1 = mean(handles.topo0, 2, 'omitnan');
+
 
     % Without outliers
     vTopo2 = handles.topo0;
@@ -771,13 +791,18 @@ function cb_topo_brush( src, event )
 
     % Brushed data
     handles    = guidata(src);                  % Grab handles  
-    brushNDX   = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);  % Gather brushed data
-    chansNDX   = find(cellfun(@isempty, brushNDX) == 0);                % Gather brushed channels
+    brushNDX   = get(handles.p, 'BrushData');
+    if iscell(brushNDX)
+        brushNDX   = cellfun(@find, brushNDX, 'Uni', 0);        % Gather brushed data
+        chansNDX   = find(cellfun(@isempty, brushNDX) == 0);    % Gather brushed channels
+    else
+        return
+    end
 
     % Compute values
     vTopo1 = max(handles.topo(:, [brushNDX{:}]), [], 2, 'omitnan');
     limits = [min(vTopo1) max(vTopo1)];
-
+    
     % Black dots
     chanstopo = chansNDX;
     for ich = 1:length(chanstopo)      
@@ -786,7 +811,7 @@ function cb_topo_brush( src, event )
    
     % Topoplot
     axes(s6);
-    cla(s6, 'reset');   
+    cla(s6, 'reset');      
     topoplotGUI(vTopo1, limits, chanstopo); title('Topoplot (brushed epochs)');         
 end
 
@@ -804,7 +829,8 @@ function cb_topo_video( src, event )
     epos  =  find(sum(isnan(vTopo)) < size(vTopo, 1));
 
     % Brushed data
-    brushNDX   = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);  % Gather brushed data    
+%     brushNDX   = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);  % Gather brushed data    
+    brushNDX   = get_handles(handles, 'p', 'BrushData', 1)    
     brushEPO   = unique([brushNDX{:}]);
 
     % Intersect
@@ -840,20 +866,25 @@ function cb_plotEEG( src, event )
     % Plot Brushed EEG Data
 
     % Gather brushed data
-    brushVAL  = get(handles.p, 'YData');    
-    brushNDX = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
-
-    % Gather brushed data from rejected datapoints
-    brushVAL0 = get(handles.po, 'YData');    
-    brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    brushNDX    = get_handles(handles, 'p', 'BrushData', 1);  % Brushed data
+    brushVAL    = get_handles(handles, 'p', 'YData', 0);      % Clean values
+    brushNDX0   = get_handles(handles, 'po', 'BrushData', 1); % Brushed data    
+    brushVAL0   = get_handles(handles, 'po', 'YData', 0);     % Rejected values
     [handles.po.BrushData] = deal([]);    
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
-    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
+    if iscell(brushNDX2)
+        brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
+    else
+        brushNDX2 = {brushNDX2};
+    end
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    if all(isnan(rainbow))
+        rainbow = [0 0 0];
+    end    
 
     % Plot brushed data    
     axes(s5);
@@ -917,18 +948,20 @@ function cb_plotEEG_allchans( src, event )
     % Plot Brushed Epochs all channels EEG Data
 
     % Gather brushed data
-    brushVAL  = get(handles.p, 'YData');    
-    brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
-
-    % Gather brushed data from rejected datapoints
-    brushVAL0 = get(handles.po, 'YData');    
-    brushNDX0 = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);
+    brushNDX    = get_handles(handles, 'p', 'BrushData', 1);  % Brushed data
+    brushVAL    = get_handles(handles, 'p', 'YData', 0);      % Clean values
+    brushNDX0   = get_handles(handles, 'po', 'BrushData', 1); % Brushed data    
+    brushVAL0   = get_handles(handles, 'po', 'YData', 0);     % Rejected values
     [handles.po.BrushData] = deal([]);
     
     % Brushed data
     brushNDX2 = [brushNDX, brushNDX0];
-    brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
-    
+    if iscell(brushNDX2)
+        brushNDX2 = arrayfun(@(row) [brushNDX2{row, :}], (1:size(brushNDX2,1))', 'Uni', false);
+    else
+        brushNDX2 = {brushNDX2};
+    end
+
     % Gather epos
     epos      = unique([brushNDX2{:}]);
 
@@ -970,6 +1003,9 @@ function cb_plotEEG_allchans( src, event )
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    if all(isnan(rainbow))
+        rainbow = [0 0 0];
+    end    
     colororder(s5, rainbow);  
 
     % Adjust Y ylimits
@@ -983,8 +1019,10 @@ function cb_eeg_chans( src, event )
     % Plot Brushed EEG Data of specific channels only
 
     % Gather brushed data
-    brushVAL  = get(handles.p, 'YData');    
-    brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+%     brushVAL  = get(handles.p, 'YData');    
+%     brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+    brushVAL   = get_handles(handles, 'p', 'YData', 0)  
+    brushNDX   = get_handles(handles, 'p', 'BrushData', 1)  
     epos      = unique([brushNDX{:}]);
 
     % Channels to plot
@@ -1037,7 +1075,8 @@ function cb_remove_eeg( src, event )
     handles     = guidata(src);                                                  % Grab handles  
     try 
         % When >1 channel was plotted it's a cell array
-        brushNDX    = cellfun(@find, get(handles.plotEEG, 'BrushData'), 'Uni', 0);   % Gather brushed data
+%         brushNDX    = cellfun(@find, get(handles.plotEEG, 'BrushData'), 'Uni', 0);   % Gather brushed data
+        brushNDX   = get_handles(handles, 'plotEEG', 'BrushData', 1)          
         lines       = find(~cellfun(@isempty, brushNDX));
         N           = cellfun(@(x) regexp(x, '\d+', 'match'), get(handles.plotEEG, 'DisplayName'), 'Uni', 0);          
     catch
@@ -1160,7 +1199,12 @@ function cb_del_brushdata( src, event )
     % Delete brushed data
 
     handles     = guidata(src);                                            % Grab handles  
-    brushNDX    = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);   % Gather brushed data
+    brushNDX    = get(handles.p, 'BrushData');
+    if iscell(brushNDX)
+        brushNDX = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);  % Gather brushed data
+    else
+        brushNDX = {find(brushNDX)};
+    end
 
     % Set brushed data to NaN
     for ichan = 1:numel(brushNDX)
@@ -1178,11 +1222,31 @@ function cb_del_brushdata( src, event )
     update_main(src, event)
 end
 
+% *** Retrieves values of handle
+    function outvar = get_handles(h, h_name, tag, find_toggle)
+    values = get(h.(h_name), tag); % Values of figure handle
+    if iscell(values)
+        % More than one channel
+        if find_toggle
+            outvar = cellfun(@find, values, 'Uni', 0);
+        else
+            outvar = values;
+        end
+    else
+        % Exactly one channel
+        if find_toggle
+            outvar = {find(values)};
+        else 
+            outvar = {values};
+        end
+    end
+end
+
 function cb_restore_brushdata( src, event )
     % Restore brushed datapoints
 
     % Gather brushed data 
-    brushRESTORE = cellfun(@find, get(handles.po, 'BrushData'), 'Uni', 0);     
+    brushRESTORE = get_handles(handles, 'po', 'BrushData', 1);
 
     % Restore brushed removed data
     for ichan = 1:numel(brushRESTORE)
@@ -1213,7 +1277,7 @@ function cb_restore_all( src, event )
     % Restore all data points    
 
     % Gather brushed data 
-    brushRESTORE = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);     
+    brushRESTORE = get_handles(handles, 'p', 'BrushData', 1)    
 
     % Restore ALLLL data
     if all(cellfun(@isempty, brushRESTORE))
@@ -1275,7 +1339,8 @@ function cb_chanexcl( src, event )
    
     % Exclude channels
     chans     = str2num(get(chanexcl_edit, 'String'));
-    brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+%     brushNDX  = cellfun(@find, get(handles.p, 'BrushData'), 'Uni', 0);
+    brushNDX   = get_handles(handles, 'p', 'BrushData', 1)              
     epos      = unique([brushNDX{:}]);
 
     % Set channels to nan
@@ -1324,6 +1389,9 @@ function [p, chans_legend] = highlight_chans(X, Y, p, chans)
 
     % Rainbowcolor
     rainbow = MapRainbow([chanlocs.X], [chanlocs.Y], [chanlocs.Z], 0);
+    if all(isnan(rainbow))
+        rainbow = [0 0 0];
+    end    
 
     % Highlight channel with a different color in main plot
     for chan = chans
@@ -1387,9 +1455,13 @@ end
 
 function [Y topo isout] = channel_outlier(Y, topo, mythresh)
     % Function to remove outliers per epoch across channels
-    isout           = isoutlier(Y, 'mean', 'ThresholdFactor', mythresh);  % Outlier detection          
-    Y(isout)        = nan;
-    topo(isout)     = nan;        
+    if size(Y, 1) > 1
+        isout           = isoutlier(Y, 'mean', 'ThresholdFactor', mythresh);  % Outlier detection          
+        Y(isout)        = nan;
+        topo(isout)     = nan;      
+    else
+        isout = [];       
+    end
 end
 
 function cb_movavg_outlier( src, event )

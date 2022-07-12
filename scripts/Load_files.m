@@ -155,7 +155,7 @@ if ~isempty(visnum)
     end
 
     % Turn to matrix
-    stages = cell2mat(stages);
+    stages = cell2mat(stages); 
 end
 
 
@@ -249,7 +249,7 @@ else
     % No file
     [~, outART]     = fileparts(nameEEG);        % Filename of output file
     outART          = [outART, '_artndxn.mat'];  % Append filename
-    artndxn         = [];
+    artndxn         = [];    
 end
 
 % identify location to save output

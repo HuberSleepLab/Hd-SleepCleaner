@@ -4,7 +4,8 @@ function [FFTtot, freq] = pwelchEPO(EEG, srate, winlen)
 nChan     = size(EEG,1);                            % chanenls
 nPnts     = size(EEG,2);                            % sample points
 nEpo20    = floor(nPnts/srate/winlen);              % number of 20s epochs
-FFTtot    = double(NaN(nChan, 161, nEpo20));        % stores final power values
+FFTtot    = double(NaN(nChan, min(161, numel(0:.25:srate/2)), nEpo20));        
+                                                    % stores final power values
 FFTepoch  = double([]);                             % stores power values per 20s epoch 
 
 % Identify infinity values and replace values

@@ -38,51 +38,53 @@ load('L18.mat');
 
 
 % *** Topoplot overnight SWA
-subplot('Position', [0.001 0.68 width+0.05 height ]);
-topoplot( SWA01x, EEG.chanlocs, ...
-    'plotchans', 1:numel(SWA01x), ...
-    'style', 'map', ...
-    'whitebk', 'on', ...
-    'maplimits', [min(SWA01x) max(SWA01x)], ...    
-    'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
-
-% Colorbar
-p1=get(gca, 'Position'); 
-cbar=colorbar();
-set(gca, 'Position', p1);   
-ylabel(cbar, sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
-title(sprintf('Whole-night\nRaw, original ref'))
-
-% Topoplot
-subplot('Position', [0.001 0.38 width+0.05 height ]);
-topoplot( SWA02x, EEG.chanlocs, ...
-    'plotchans', 1:numel(SWA02x), ...
-    'style', 'map', ...
-    'whitebk', 'on', ...
-    'maplimits', [min(SWA02x) max(SWA02x)], ...    
-    'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
-
-% Colorbar
-p1=get(gca, 'Position'); 
-cbar=colorbar();
-set(gca, 'Position', p1);   
-title(sprintf('Clean, original ref'))
-
-% Topoplot
-subplot('Position', [0.001 0.08 width+0.05 height ]);
-topoplot( SWA03x, EEG.chanlocs, ...
-    'plotchans', 1:numel(SWA03x), ...
-    'style', 'map', ...
-    'whitebk', 'on', ...
-    'maplimits', [min(SWA03x) max(SWA03x)], ...    
-    'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
-
-% Colorbar
-p1=get(gca, 'Position'); 
-cbar=colorbar();
-set(gca, 'Position', p1);   
-ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
-title(sprintf('Clean, average ref'))
+if EEG.nbchan > 1
+    subplot('Position', [0.001 0.68 width+0.05 height ]);
+    topoplot( SWA01x, EEG.chanlocs, ...
+        'plotchans', 1:numel(SWA01x), ...
+        'style', 'map', ...
+        'whitebk', 'on', ...
+        'maplimits', [min(SWA01x) max(SWA01x)], ...    
+        'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
+    
+    % Colorbar
+    p1=get(gca, 'Position'); 
+    cbar=colorbar();
+    set(gca, 'Position', p1);   
+    ylabel(cbar, sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
+    title(sprintf('Whole-night\nRaw, original ref'))
+    
+    % Topoplot
+    subplot('Position', [0.001 0.38 width+0.05 height ]);
+    topoplot( SWA02x, EEG.chanlocs, ...
+        'plotchans', 1:numel(SWA02x), ...
+        'style', 'map', ...
+        'whitebk', 'on', ...
+        'maplimits', [min(SWA02x) max(SWA02x)], ...    
+        'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
+    
+    % Colorbar
+    p1=get(gca, 'Position'); 
+    cbar=colorbar();
+    set(gca, 'Position', p1);   
+    title(sprintf('Clean, original ref'))
+    
+    % Topoplot
+    subplot('Position', [0.001 0.08 width+0.05 height ]);
+    topoplot( SWA03x, EEG.chanlocs, ...
+        'plotchans', 1:numel(SWA03x), ...
+        'style', 'map', ...
+        'whitebk', 'on', ...
+        'maplimits', [min(SWA03x) max(SWA03x)], ...    
+        'electrodes','on', 'headrad',.5, 'intrad',.7, 'plotrad',.7, 'colormap', L18);
+    
+    % Colorbar
+    p1=get(gca, 'Position'); 
+    cbar=colorbar();
+    set(gca, 'Position', p1);   
+    ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
+    title(sprintf('Clean, average ref'))
+end
 
 % *** Clean sleep epochs after manual artifact rejection
 cleanThresh     = .97;
@@ -113,4 +115,7 @@ barh(prcnt_epolow, 'r', 'DisplayName', 'Bad channels');
 % Make pretty
 xlim([min([prcnt_cleanEPO; cleanThresh])*100 100]); xlabel(sprintf('Proportion of clean epochs (%%)\nin sleep stages %s', strjoin(stages, ' '))); ylabel('Channel ID'); yticks(4:4:size(EEG.data, 1)); ylim([1 size(artndxn, 1)]);
 plot(repmat(cleanThresh, 1, length(prcnt_cleanEPO)), 1:length(prcnt_cleanEPO), ':', 'LineWidth', 2, 'DisplayName', 'Threshold')
+if EEG.nbchan > 1
+    ylim([1 size(artndxn, 1)]);
+end
 % legend('Location', 'North', 'Orientation','horizontal');    
