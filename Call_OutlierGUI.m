@@ -101,7 +101,7 @@ save(fullfile(pathART, newART), 'artndxn', 'visnum', 'visgood', 'scoringlen')
 run('Evaluation_plots.m')
 print(gcf, fullfile(pathART, namePLOT), '-dpng')
 
-
+clc
 disp(['Finished in ', num2str(toc/60), 'min'])
 
 % % *** Call for debugging
