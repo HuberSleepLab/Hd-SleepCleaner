@@ -14,6 +14,8 @@ clearvars;
 close all;
 clc;
 
+tic;
+
 % *** Call configuration file
 pmain = fileparts(mfilename('fullpath'));           % Path to this script
 run(fullfile(pmain, 'Configuration_OutlierGUI.m'))  % Calls configurations
@@ -35,6 +37,8 @@ run('Preprocess_EEG.m')
 
 % ### Outlier routine (original reference)
 % ###########################################
+%%
+
 
 % Work with pre-defined channels
 EEG = pop_select(EEG, 'channel', chansID);
@@ -83,7 +87,7 @@ if EEG.nbchan > 1
         'H2', H2);
     
     % Outlier routine on average referenced EEG
-    artndxn = outlier_routine(EEG, M2, artndxn, visnum, 10, 12, 10, ...
+    artndxn = outlier_routine(EEG, M2, artndxn, visnum, 10, 12, 10, outlier_types, ...
         'scoringlen', scoringlen, ...        
         'stages_of_interest', stages_of_interest, ...
         'chans_excl', chans_excl);
@@ -97,6 +101,8 @@ save(fullfile(pathART, newART), 'artndxn', 'visnum', 'visgood', 'scoringlen')
 run('Evaluation_plots.m')
 print(gcf, fullfile(pathART, namePLOT), '-dpng')
 
+
+disp(['Finished in ', num2str(toc), 's'])
 
 % % *** Call for debugging
 % [ manoutSWA ] = OutlierGUI(M1.SWA, ...

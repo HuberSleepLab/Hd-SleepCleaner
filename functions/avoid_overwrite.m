@@ -57,7 +57,7 @@ if exist(fullfile(inPath, inFile),'file') == 2 %file exists already, check for a
     Cnt = startCount; %counter for file name
     
     while checker
-        testPath = [inPath shortFile '_' num2str(Cnt, ['%0' numDigits 'i']) fileType];
+        testPath = strjoin([inPath shortFile '_' num2str(Cnt, ['%0' numDigits 'i']) fileType], '');
         
         if exist(testPath,'file') == 2
             Cnt = Cnt + 1; %increase counter until a non-existing file name is found
@@ -70,7 +70,7 @@ if exist(fullfile(inPath, inFile),'file') == 2 %file exists already, check for a
             warning(['No unused file found at given number of digits. Number of digits increased to ' num2str(numDigits) '.']);
         end
     end
-    outFile = [shortFile '_' num2str(Cnt, ['%0' numDigits 'i']) fileType];
+    outFile = strjoin([shortFile '_' num2str(Cnt, ['%0' numDigits 'i']) fileType], '');
     
 else
     outFile = inFile;

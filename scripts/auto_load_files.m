@@ -33,6 +33,7 @@ end
 % EEG
 pathEEG = eeg_source;
 EEG_Content = getContent(eeg_source);
+EEG_Content(~contains(EEG_Content, '.mat')) = [];
 ART_Content = getContent(destination);
 ART_Content(~contains(ART_Content, '.mat')) = [];
 ART_Content = extractBefore(ART_Content, '_artndxn');

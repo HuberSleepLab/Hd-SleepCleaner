@@ -140,17 +140,17 @@ pname_eeglab = 'C:\PhDScripts\EEGlab2021.1';
                         % downloaded here: https://eeglab.org/download/
 addpath(pname_eeglab);  % Add EEGLAB to paths
 
-% *** Output path
-destination = 'eeg';    % Specify where you want the final output saved. 
-                        % You can either choose one of the following
-                        % options or give a specific filepath. A filepath
-                        % example would be 'C:\PhDScripts\SleepEEG\'.
-                        % Options are:
-                        % 'eeg':        same folder as EEG data                        
-                        % 'scoring':    same folder as sleep scoring
-                        % 'artndxn':    same folder as artndxn
-                        % Any other string will be interpreted as a
-                        % filepath.
+% % *** Output path
+% destination = 'eeg';    % Specify where you want the final output saved. 
+%                         % You can either choose one of the following
+%                         % options or give a specific filepath. A filepath
+%                         % example would be 'C:\PhDScripts\SleepEEG\'.
+%                         % Options are:
+%                         % 'eeg':        same folder as EEG data                        
+%                         % 'scoring':    same folder as sleep scoring
+%                         % 'artndxn':    same folder as artndxn
+%                         % Any other string will be interpreted as a
+%                         % filepath.
 
 
 % *** Add helper functions

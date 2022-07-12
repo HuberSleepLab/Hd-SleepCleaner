@@ -20,16 +20,21 @@ eegplot(EEG.data, 'spacing', 50, 'srate', EEG.srate, ...
 clc
 
 T = input('Any bad channels? ');
-if ~isempty(T)
+
+if ~isempty(T) && ~any(T(:)>size(EEG.data, 1)) % if number provided and it's in the channel range
     close
     chans_excl = [chans_excl, T];
     EEG =  pop_select(OldEEG, 'nochannel', chans_excl);
 
     eegplot(EEG.data, 'spacing', 50, 'srate', EEG.srate, ...
-    'winlength', 60, 'position', [0 0 Pix(3) Pix(4)*.97],  'eloc_file', EEG.chanlocs)
+        'winlength', 60, 'position', [0 0 Pix(3) Pix(4)*.97],  'eloc_file', EEG.chanlocs)
     clc
+    T = input('Identify around a minute of clean data with blinks: ');
+else % ask for good time points
+    clc
+    T = input('Identify around a minute of clean data with blinks: ');
 end
-T = input('Identify around a minute of clean data with blinks: ');
+
 
 %%% Run ICA
 
