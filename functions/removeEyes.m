@@ -86,9 +86,8 @@ if strcmp(T, 'n')
     error('didnt work')
 end
 
-close 
-close
 
+close all
 clc
 
 OldEEG.data(~ismember(1:size(OldEEG.data, 1), chans_excl), :) = NewEEG.data;
