@@ -205,6 +205,9 @@ EEG.chanlocs = readlocs(fname_chanlocs);      % Channel locations;
 %     end
 % end
 
+% Check sampling rate
+check_srate(EEG.srate, srate_down, is_preprocessing)
+
 
 
 % ### Load Artndxn
