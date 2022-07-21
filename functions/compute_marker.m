@@ -59,6 +59,16 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     % How much channel deviate from mean
     devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);   
 
+    % Nanndxn
+    nanndxn               = single(artndxn);
+    nanndxn(nanndxn == 0) = nan;    
+
+    % Consider artndxn for FFTtot
+    if ~isempty(artndxn)
+        FFTtot      = permute( permute(FFTtot, [1, 3, 2]) .* nanndxn, [1, 3, 2]);
+        FFTtot_RZ   = permute( permute(FFTtot_RZ, [1, 3, 2]) .* nanndxn, [1, 3, 2]);
+    end
+
     % Assign to output structure
     M.FFTtot    = single(FFTtot);
     M.FFTtot_RZ = single(FFTtot_RZ);
@@ -71,7 +81,7 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     M.L1        = single(L1);    
     M.L2        = single(L2);    
     M.H1        = single(H1);    
-    M.H2        = single(H2);    
+    M.H2        = single(H2);  
     
 
 end
