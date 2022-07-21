@@ -68,7 +68,8 @@ function [EEG, artintp] = Call_EpowiseInterp(EEG, artndxn, stages, varargin)
     addParameter(p, 'N1', -1, @isnumeric) % N1 as coded in sleep stages
     addParameter(p, 'N2', -2, @isnumeric) % N2 as coded in sleep stages
     addParameter(p, 'N3', -3, @isnumeric) % N3 as coded in sleep stages    
-    addParameter(p, 'REM', 0, @isnumeric) % REM as coded in sleep stages        
+    addParameter(p, 'REM', 0, @isnumeric) % REM as coded in sleep stages
+    addParameter(p, 'chansNotInterp', [49 56 107 113 126 127], @isnumeric) % Those channels will not be interpolated  
     addParameter(p, 'chansToIgnore', [43 48 49 56 63 68 73 81 88 94 99 107 113 119 120 125 126 127 128], @isnumeric) % Indices of channels not taken into account to determine bad epochs
     addParameter(p, 'scoringlen', 20, @isnumeric) % Epoch length of scoring
     addParameter(p, 'visgood', [], @isnumeric) % Epochs that are labelled as clean during sleep scoring (manual artifact rejection), corresponds to: find(sum(vistrack') == 0);    
@@ -83,7 +84,7 @@ function [EEG, artintp] = Call_EpowiseInterp(EEG, artndxn, stages, varargin)
     % Epochs that can be interpolated
     intp = candiate_epos(artndxn, stages, EEG.chanlocs, ...
         'maxNumCloseChans', 2, ...
-        'chansToIgnore', [49 56 107 113 126 127], ...
+        'chansToIgnore', chansNotInterp, ...
         'stagesOfInterest', stagesOfInterest, ...
         'chanDist', 0.4);    
 
