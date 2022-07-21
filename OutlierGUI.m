@@ -203,12 +203,12 @@ s5 = subplot('Position', size_eeg);
 plotEEG = yline(0, 'HandleVisibility','off');
 xline([0 epo_len], 'k:', 'HandleVisibility','off')
 legend(); ylabel(amp_ylabel); xlabel('time (s)'); xlim([-10 (epo_len+10)]);
-title('EEG (brushed epochs)');  
+title('EEG (selected epochs)');  
 
 % Prepare topoplot
 s6 = subplot('Position', size_topo);
 topoplotGUI(zeros(1, size(Y, 1)), [0 1], []);
-title('Topoplot (brushed epochs)');    
+title('Topoplot (selected epochs)');    
  
 
 % ********************
@@ -306,7 +306,7 @@ uicontrol(panel01, UIprops, ...
     'position', [panelbutton_left D01h+D01v*5 panelbutton_width D01v], ...
     'callback', @cb_restore_brushdata);
 uicontrol(panel01, UIprops, ...
-    'string', 'Restore all/br. epochs [F]', ...
+    'string', 'Restore selected/all epochs [F]', ...
     'position', [panelbutton_left D01h+D01v*4 panelbutton_width D01v], ...
     'callback', @cb_restore_all); 
 uicontrol(panel01, UIprops, ...
@@ -413,7 +413,7 @@ uicontrol(panelCHAN, UIprops, ...
     'position', [panelbutton_left 0.14+D01ev*2 panelbutton_width 0.1]);  
 uicontrol(panelCHAN, UIprops, ...
     'HorizontalAlignment', 'Left', ...        
-    'string', 'Plot EEG (of brushed epochs)', ...
+    'string', 'Plot EEG (of selected epochs)', ...
     'position', [panelbutton_left 0.14+D01ev  panelbutton_width 0.1]);  
 uicontrol(panelCHAN, UIprops, ...
     'string', 'Highlight channels (in main plot)', ...
@@ -812,7 +812,7 @@ function cb_topo_brush( src, event )
     % Topoplot
     axes(s6);
     cla(s6, 'reset');      
-    topoplotGUI(vTopo1, limits, chanstopo); title('Topoplot (brushed epochs)');         
+    topoplotGUI(vTopo1, limits, chanstopo); title('Topoplot (selected epochs)');         
 end
 
 function cb_topo_video( src, event )
@@ -916,7 +916,7 @@ function cb_plotEEG( src, event )
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
-    title('EEG (brushed epochs)');
+    title('EEG (selected epochs)');
 
     % Filter EEG Toggle
     if isfilter.Value
@@ -993,7 +993,7 @@ function cb_plotEEG_allchans( src, event )
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
-    title('EEG (brushed epochs)')
+    title('EEG (selected epochs)')
 
     % Filter EEG Toggle
     if isfilter.Value
@@ -1056,7 +1056,7 @@ function cb_eeg_chans( src, event )
     handles.firstfilter = 1;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
-    title('EEG (brushed epochs)')
+    title('EEG (selected epochs)')
 
     % Filter EEG Toggle
     if isfilter.Value
