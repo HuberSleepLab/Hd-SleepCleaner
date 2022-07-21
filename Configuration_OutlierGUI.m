@@ -3,19 +3,17 @@
 % Change variables and paths in this script to your desired settings.
 % Thereafter, call the script "Call_OutlierGUI".
 %
-% Date: 20.05.2022
-%
 % *************************************************************************
 
 % *** General
-chansID    = 1:128;     % The EEG data loaded in will be stored in a 
+chansID    = 1:64;     % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
                         % rejection on (the rows in your matrix). The 
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [107 113 126 127];
+chans_excl  = [];
                         % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
@@ -46,7 +44,7 @@ A          =  'A';      % Artifacts (some labs score epochs with artifacts
                         % with a distinct label, indicate it here. Other
                         % labs score those epochs with the respective sleep
                         % stage, then ignore this value.
-stages     = {N1, N2, N3, N4};
+stages     = {N1, N2, N3};
                         % In case you load in your sleep scoring file, the
                         % artifact rejectino routine will only be performed
                         % in epochs belonging to those sleep stages. All
@@ -69,7 +67,7 @@ num_header = 0;         % Only for when your scoring file is stored as a
                         % skipped when loading in your scoring file.
 
 % *** Manual artifact rejection
-manual     = 0;         % In case you have identified artifacts in advance
+manual = 0;             % In case you have identified artifacts in advance
                         % in one or few channels, e.g. during sleep
                         % scoring, you can load in another file that stores
                         % this information. This file needs to be a vector
@@ -93,7 +91,7 @@ H2 = 30;                % Higher band: upper limit
 
 
 % *** Preprocessing
-is_preprocessing = 0;   % Toggle whether you want to preprocess your EEG 
+is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
                         % before artifact correction. This low- and
                         % high-pass filters your data (pass-band: 0.5 - 30 
                         % Hz) and down-samples it to a lower sampling rate. 
@@ -110,7 +108,7 @@ is_sweat = 0;           % Toggle whether you want to apply a stricter high-
 
 
 % *** Filenames
-fname_chanlocs = 'test129.loc'; % File storing channel locations.
+fname_chanlocs = 'test64.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 
