@@ -1,53 +1,23 @@
 # What this repository is about
-This is an advanced semi-automatic artifact removal procedure based on [Huber et al., 2000](https://journals.lww.com/neuroreport/Fulltext/2000/10200/Exposure_to_pulsed_high_frequency_electromagnetic.12.aspx?casa_token=rmSXsQLiWZcAAAAA:9g0JXdXUpAJycVWzDSCLXKynmKeGpbXGJvZkrRGzSw5tifqkBLWYyfESIq4814-SpcqtBomfWBGnYf1-wyrbWbak) using a Maltab GUI specifically designed for the identification of artifacts in HD-EEG. 
-
-
-# How to use it
-1. Open "Configuration_OutlierGUI.m", and adjust the parameters according to your data (number of channels, scoring lenth, stages to include, etc.).
-2. Run "Call_OutlierGUI.m". This script will ask you to load 1) EEG data, 2) the corresponding sleep scoring, and optionally 3), in case you want to modify previously rejected artifacts, the corresponding artndxn (containing rejected epochs) file from a previous round. Next, power will be computed automatically and the GUI is called. Click "Done" when you have rejected all artifacts. The GUI will be called several times with different inputs (selected in the configurations) so that you find as many artifacts as possible.
-
-### Required data
-**EEG**: The EEG data needs to be stored in an [EEG structure as used in EEGLAB](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg), saved as a .MAT file.
-
-**Sleep scoring**: This can either be a .mat file containing an array of N = number of epochs such that:
-N1 = -1
-N2 = -2
-N3 = -3
-N4 = -4
-W = 1
-REM = 0
-
-Or, this can be one of our .vis files that our lab uses for [sleep scoring](https://github.com/HuberSleepLab/sleep-scoring). 
-
-### output
-The final output will be saved as a MAT file in the folder containing the scoring information. There will also be a jpg illustrating the EEG before and after cleaning.
-The MAT file will include:
-- artndxn which is  channel x epoch logical matrix indicating with 1 if the data is an artifact.
-- visnum which is an array indicating the scoring of each epoch
-- visgood which lists all the epochs that are artefact free
-
-
-
-### Example video
-[![IMAGE ALT TEXT](Thumbnail.png)](https://youtu.be/XG-Dh1JqR5E "How to use the GUI")
-
-
-
-
-# How it works
-As for sleep scoring, the procedure segmented the EEG (filtered between 0.5 and 30 Hz or 0.9 and 30 Hz when sweat artifacts were present) into 20 s epochs. For each channel in each sleep staged N1, N2, and N3 epoch, spectral power as well as the maximum squared deviation in amplitude from the average EEG signal was computed. Values from all channels and all NREM epochs were then visualized in one figure and outliers were identified, both manually and automatically. Visualizing all channels and epochs altogether has the advantage that extreme values can be both identified in respect to values of neighboring epochs, as well as values from other channels in the same epoch.
-
-Artifacts were identified based on spectral power in the delta (0.5 – 4.5 Hz) and beta (20 – 30 Hz) frequency range. Power spectral density (PSD) values, from which spectral power was calculated, was computed using the pwelch() function in Matlab (Welch method, 4 s Hanning windows, 50% overlap, frequency resolution 0.25 Hz). Beforehand, the EEG was robustly Z-standardized over samples (separately for each channel). Doing so adjusts the amplitude scale across channels which allows to compare spectral power values of different channels altogether. Robust Z-standardization uses the median and inter-quartile-range (IQR) instead of the mean and standard deviation and is therefore robust towards extreme values which are naturally present in EEG data. Remaining artifacts not sensitive to spectral power were thereafter identified using the maximum squared deviation in amplitude of one channel from the average EEG signal (not Z-standardized).
-
-Eventually, a channel was removed in a respective epoch when it contained artifacts. To confirm the presence of artifacts, the EEG and topography of channels in a respective epoch was visualized and examined. Channels in a respective epoch caught our attention when they deviated from their neighbours in terms of 1) delta power, 2) beta power, or 3) the maximum squared deviation in amplitude from the average EEG signal. In the end, we evaluated delta power computed from not Z-standardized EEG and removed any remaining artifacts. 
-
-Before performing this routine on average referenced data, we performed it on Cz referenced data (reference as during recording). We did this to remove a good amount of artifacts before average referencing as average referencing is susceptible to large artifacts itself. More specifically, we set 20 s epochs of EEG in artifact-contaminated channels to NaN before average referencing. Thus, in total, we screened each night eight times for artifacts, each time based on a different marker. The screening of one night took approx. 10-60 minutes, depending on the quality of the data.  
-
-In the background, two automatic outlier detection procedures supported the artifact removal routine. More specifically, outliers were automatically detected 1) channel-wise when epochs deviated more than x standard deviations from a moving average of 40 epochs and 2) epoch-wise, when channels deviated more than x standard deviations from the average of all channels. Thresholds were adapted for each night but were usually situated between 8 and 12 standard deviations.
-
-Thereafter, channels were interpolated in those epochs in which they were labeled as bad. In case more than 3 neighboring channels were classified as bad, however, the entire epoch was rejected instead. With this method, only a minimal amound of NREM epochs needed to be rejected due to poor data quality. Epochs in which only certain channels show artifacts can be inlcuded in the analysis by interpolating those channels in the respective epoch. Moreover, being able to visualize the EEG of suspicious epochs teaches the researcher a lot about the data when performing this routine.
+This is a new, semi-automatic artifact removal routine specifically designed for sleep hd-EEG recordings. By employing a graphical user interface (GUI), the user assesses epochs in regard to four sleep quality markers (SQMs). Based on their topography and underlying EEG signal, the user eventually removes artifactual values. To identify artifacts, the user is required to have basic knowledge of (patho-)physiological and artifactual EEG. The final output consists of a binary matrix (channels x epochs). Channels affected by artifacts can be restored in afflicted epochs using epoch-wise interpolation, a function included in the online repository.
 
 ### Screenshot of the GUI
 ![](ScreenshotGUI.png "Screenshot of the Maltab GUI")
 
 
+
+# How to use it
+1. Open `Configuration_OutlierGUI.m` and adjust the parameters according to your data (number of channels, scoring lenth, stages to include, etc.).
+2. Run `Call_OutlierGUI.m`. This script will ask you to load the EEG data. Optionally, you can further load 1) the corresponding sleep scoring, 2) perviously rejected artifacts, and 3) manually rejected epochs typically performed during sleep scoring. Then the artifact removal routine begins. In total, each night is screened eight times for artifacts, each time based on a different SQM. The screening of one night takes approximately 10 to 60 minutes, depending on the length and quality of the data, as well as the experience of the user.
+
+## The artifact removal routine
+Each value in the summary plot corresponds to one epoch for a given channel. Consequently, outlier values correspond to an artifactual EEG signal from one channel in a given epoch. Outlier values are identified based on four sleep-related SQMs in the following order: 1) delta power (normalized), 2) beta power (normalized), 3) the maximum squared deviation in amplitude from the average EEG signal, and, 4) delta power (raw). All four SQMs are computed from EEG data with original reference (EEG signal referenced as during recording), as well as from average referenced EEG data. Hence, the artifact removal routine is repeated eight times. The first four times, the user iterates through all four SQMs from EEG data with original reference, thereafter through all four SQMs from average referenced EEG data. During each iteration, outlier values are identified and possible artifacts detected. 
+
+## The output
+As a final result, the artifact removal routine provides a matrix (channels x epochs) containing 0s and 1s, where 0 denotes that a certain channel contained artifacts or did not belong to the sleep stage of interest, and 1 indicates that a certain channel is artifact-free and within the sleep stage of interest.
+
+## Data format
+Currently, the EEG needs to be stored in a `.mat file`, storing a common [EEGLAB structure](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg) with `EEG.srate` and `EEG.data` as fields that contain the sampling rate and EEG data, respectively. The latter stores the EEG signal as a matrix (channels x samples). The function `makeEEG()` converges EEG data into an EEGLAB structure and is included in the online repository. Sleep stages need to be stored in a vector of numbers or letters, where a distinct number or letter corresponds to a certain sleep stage. Supported data formats currently include `.mat`, `.txt` and `.vis` files.  A short example dataset (64 channels, one sleep cycle) is included in the online repository.
+
+### Example video
+[![IMAGE ALT TEXT](Thumbnail.png)](https://youtu.be/HQNmgWaqGKY "How to use the GUI")
