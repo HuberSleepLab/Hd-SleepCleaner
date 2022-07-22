@@ -65,6 +65,14 @@ num_header = 0;         % Only for when your scoring file is stored as a
                         % contain other explanations, indicate how many
                         % header lines your file contains. Those will be
                         % skipped when loading in your scoring file.
+folder_distance = 0;    % Depending on where the EEG and scoring file is 
+                        % located, it can be convenient that after you have
+                        % selected the EEG file, Matlab points you to the
+                        % same or a folder X levels underneath the folder.
+                        % When the EEG and scoring file is in the same
+                        % folder, set the value to 0 ( --> same folder). If
+                        % the scoring file is in another folder 2 levels
+                        % below, set it to 2, etc.
 
 % *** Manual artifact rejection
 manual = 0;             % In case you have identified artifacts in advance
