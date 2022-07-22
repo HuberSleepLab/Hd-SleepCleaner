@@ -75,7 +75,7 @@ folder_distance = 0;    % Depending on where the EEG and scoring file is
                         % below, set it to 2, etc.
 
 % *** Manual artifact rejection
-manual = 0;             % In case you have identified artifacts in advance
+manual = [];            % In case you have identified artifacts in advance
                         % in one or few channels, e.g. during sleep
                         % scoring, you can load in another file that stores
                         % this information. This file needs to be a vector
@@ -83,7 +83,8 @@ manual = 0;             % In case you have identified artifacts in advance
                         % corresponds to clean epochs. Only those epochs
                         % will be taken into account for the artifact
                         % rejection. All other epochs will be classified as
-                        % "bad" = 0.
+                        % "bad". In case you leave it empty, no manual
+                        % artifact rejection will be imported.
 
 % *** Frequency limits for spectral power computation
 L1 = 0.5;               % Lower band: lower limit
