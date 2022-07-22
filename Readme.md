@@ -20,4 +20,4 @@ As a final result, the artifact removal routine provides a matrix (channels x ep
 Currently, the EEG needs to be stored in a `.mat file`, storing a common [EEGLAB structure](https://eeglab.org/tutorials/ConceptsGuide/Data_Structures.html#eeg-and-alleeg) with `EEG.srate` and `EEG.data` as fields that contain the sampling rate and EEG data, respectively. The latter stores the EEG signal as a matrix (channels x samples). The function `makeEEG()` converges EEG data into an EEGLAB structure and is included in the online repository. Sleep stages need to be stored in a vector of numbers or letters, where a distinct number or letter corresponds to a certain sleep stage. Supported data formats currently include `.mat`, `.txt` and `.vis` files.  A short example dataset (64 channels, one sleep cycle) is included in the online repository.
 
 ### Example video
-[![IMAGE ALT TEXT](Thumbnail.png)](https://youtu.be/XG-Dh1JqR5E "How to use the GUI")
+[![IMAGE ALT TEXT](Thumbnail.png)](https://youtu.be/HQNmgWaqGKY "How to use the GUI")
