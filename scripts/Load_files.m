@@ -28,10 +28,15 @@ end
 
 
 % *** Grab files
+% Point to this folder
+if isempty(lookup_eeg)
+    lookup_eeg = fullfile(pmain, 'example_data');
+end
+
 % Grab EEG
 [nameEEG, pathEEG]  = uigetfile({'*.mat','EEG file (*.mat)'}, ...
     'Select file containing EEG structure', ...
-    'Select .mat file with EEG structure', ...
+    fullfile(lookup_eeg, 'Select .mat file with EEG structure'), ...
     'MultiSelect', 'off');   
 
 % Stop in case no EEG was selected
@@ -39,26 +44,33 @@ if nameEEG == 0
     error('No EEG file selected.'); 
 end
 
-% Folder level of following files
-str_go_back = repelem('\..', folder_distance);
+% Point to this folder
+if isempty(lookup_scoring)
+    lookup_scoring = pathEEG;
+end
 
 % Grab sleep scoring
 [nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.txt','Scoring file (*.mat, *.vis, *.txt)'}, ...
     'Select file containing sleep scoring', ...
-    fullfile(pathEEG, str_go_back, 'Select file containing sleep scoring'), ...    
+    fullfile(lookup_scoring, 'Select file containing sleep scoring'), ...    
     'MultiSelect', 'off');
+
+% Point to this folder
+if isempty(lookup_artndxn)
+    lookup_artndxn = pathEEG;
+end
 
 % Grab artifact rejection
 [nameART, pathART]  = uigetfile({'*.mat','Artndxn file (*.mat)'}, ...
     'Do you want to modify an alerady existing artifact rejection output?', ...
-    fullfile(pathEEG, str_go_back, 'Select an artndxn.mat file to modify, cancel otherwise'), ...
+    fullfile(lookup_artndxn, 'Select an artndxn.mat file to modify, cancel otherwise'), ...
     'MultiSelect', 'off');
 
 % Grab manual artifact rejection during sleep scoring
 if ~isempty(manual)
     [nameMAN, pathMAN]  = uigetfile({'*.mat','Manual artifact rejection file (*.mat)'}, ...
         'Manual artifact rejection', ...
-        fullfile(pathEEG, str_go_back, 'Select file containing manual artifact rejection, cancel otherwise'), ...
+        fullfile(lookup_eeg, 'Select file containing manual artifact rejection, cancel otherwise'), ...
         'MultiSelect', 'off');
 else
     nameMAN=''; pathMAN='';

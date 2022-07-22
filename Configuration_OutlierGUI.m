@@ -64,14 +64,13 @@ num_header = 0;         % Only for when your scoring file is stored as a
                         % contain other explanations, indicate how many
                         % header lines your file contains. Those will be
                         % skipped when loading in your scoring file.
-folder_distance = 0;    % Depending on where the EEG and scoring file is 
-                        % located, it can be convenient that after you have
-                        % selected the EEG file, Matlab points you to the
-                        % same or a folder X levels underneath the folder.
-                        % When the EEG and scoring file is in the same
-                        % folder, set the value to 0 ( --> same folder). If
-                        % the scoring file is in another folder 2 levels
-                        % below, set it to 2, etc.
+lookup_eeg = '';        % Define folder to which Matlab points to by 
+                        % default when displaying the pop-up to load in the
+                        % EEG data. In case it stays empty, it points to
+                        % the "example_data" folder of the repository.
+lookup_scoring = '';    % Same for sleep scoring file.         
+lookup_artndxn = '';    % Same for sartifact rejection file.                        
+
 
 % *** Manual artifact rejection
 manual = [];            % In case you have identified artifacts in advance
