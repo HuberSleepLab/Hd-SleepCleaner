@@ -11,7 +11,7 @@ function [EEG] = epowise_interp(EEG, intp, varargin)
     end  
 
 
-    % *** Start function
+    % *** Start function    
     for iepo = 1:numel(intp.epo_intp)
         epo  = intp.epo_intp(iepo);
 
@@ -43,9 +43,21 @@ function [EEG] = epowise_interp(EEG, intp, varargin)
             xlabel('Time (s)'); 
             ylabel('Amplitude (\muV)')
             input('Press [ENTER] to continue.')
+            close
         end
 
         % Insert interpolated data
         EEG.data(intp.chans_bad{iepo}, from:to) = EPO.data(intp.chans_bad{iepo}, :);
+
+        % update waitbar
+        if iepo == 1
+            wb = waitbar(0, 'Epoch-wise interpolation');
+        end
+        waitbar(iepo/numel(intp.epo_intp), ...
+            wb, ...
+            sprintf('Epoch-wise interpolation (%d/%d)', iepo, numel(intp.epo_intp)));               
     end
+
+    % close waitbar    
+    close(wb);     
 end
