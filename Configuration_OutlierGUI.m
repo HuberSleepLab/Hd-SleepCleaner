@@ -13,8 +13,7 @@ chansID    = 1:64;     % The EEG data loaded in will be stored in a
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [];
-                        % It makes sense to have an output matrix of the
+chans_excl  = [];       % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
                         % artifact rejection, because they do not capture
@@ -100,7 +99,7 @@ H2 = 30;                % Higher band: upper limit
 
 
 % *** Preprocessing
-is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
+is_preprocessing = 0;   % Toggle whether you want to preprocess your EEG 
                         % before artifact correction. This low- and
                         % high-pass filters your data (pass-band: 0.5 - 30 
                         % Hz) and down-samples it to a lower sampling rate. 
@@ -117,7 +116,7 @@ is_sweat = 0;           % Toggle whether you want to apply a stricter high-
 
 
 % *** Filenames
-fname_chanlocs = 'test64.loc'; % File storing channel locations.
+fname_chanlocs = 'locs64.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 
