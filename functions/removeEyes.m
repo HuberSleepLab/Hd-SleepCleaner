@@ -86,7 +86,7 @@ eegplot(NewEEG.data, 'spacing', 50, 'srate', EEG.srate, ...
 clc
 T = input('Did it work? ', 's');
 
-if strcmp(T, 'n')
+if strcmp(T, 'n') || strcmp(T, 'no') 
     close all
     error('didnt work')
 end
