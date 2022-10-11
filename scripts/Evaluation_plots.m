@@ -114,7 +114,7 @@ barh(prcnt_epolow, 'r', 'DisplayName', 'Bad channels');
 
 % Make pretty
 % xlim([min([prcnt_cleanEPO; cleanThresh])*100 100]); 
-xlabel(sprintf('Proportion of clean epochs (%%)\nin sleep stages %s', strjoin(stages, ' '))); ylabel('Channel ID'); yticks(4:4:size(EEG.data, 1)); ylim([1 size(artndxn, 1)]);
+xlabel(sprintf('Proportion of clean epochs (%%)\nin sleep stages %s', num2str(stages))); ylabel('Channel ID'); yticks(4:4:size(EEG.data, 1)); ylim([1 size(artndxn, 1)]);
 plot(repmat(cleanThresh, 1, length(prcnt_cleanEPO)), 1:length(prcnt_cleanEPO), ':', 'LineWidth', 2, 'DisplayName', 'Threshold')
 if EEG.nbchan > 1
     ylim([1 size(artndxn, 1)]);

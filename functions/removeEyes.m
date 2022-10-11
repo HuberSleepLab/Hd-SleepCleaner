@@ -39,10 +39,19 @@ end
 %%% Run ICA
 
 % only use selected time
-shortEEG = pop_select(EEG, 'time', T);
+if isempty(T)
+    FinalEEG = OldEEG;
+    return
+else
+    shortEEG = pop_select(EEG, 'time', T);
+end
 
 % high-pass filter
-shortEEG.data = hpfilt(shortEEG.data, shortEEG.srate, 2.5);
+try
+    shortEEG.data = hpfilt(shortEEG.data, shortEEG.srate, 2.5, 1.5); % WARNING: at the moment in Matcyle
+catch
+    shortEEG.data = hpfilt(shortEEG.data, shortEEG.srate, 2.5); % WARNING: at the moment in Matcyle
+end
 
 % run fast ICA
 shortEEG = pop_runica(shortEEG, 'fastica', 'approach', 'symm');
@@ -86,9 +95,11 @@ eegplot(NewEEG.data, 'spacing', 50, 'srate', EEG.srate, ...
 clc
 T = input('Did it work? ', 's');
 
-if strcmp(T, 'n') || strcmp(T, 'no') 
+if strcmp(T, 'n') || strcmp(T, 'no')
     close all
-    error('didnt work')
+    warning('skippingEyes')
+    FinalEEG = OldEEG;
+    return
 end
 
 

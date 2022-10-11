@@ -47,7 +47,6 @@ end
 
 nameEEG = EEG_Content(randi(numel(EEG_Content)));
   VIS = 0;
-  pathVIS = 0;
   nameVIS = 0;
 
   pathART = 0;
@@ -60,6 +59,18 @@ pathMAN = 0;
 % TODO, search for scoring, if present, use it.
 % ### Load sleep scoring
 % #########################
+nameVISfolder = extractBefore(nameEEG, '_Cutting.mat'); % WANRING: LSM-specific
+pathVIS = fullfile(scoring_source, nameVISfolder);
+Content = getContent(pathVIS);
+Content(~contains(Content, '.vis')) = [];
+if any(contains(Content, '_rh'))
+    nameVIS = Content(contains(Content, '_rh'));
+elseif ~isempty(Content)
+     nameVIS = Content(contains(Content, '.vis'));
+else
+    nameVIS = 0;
+end
+
 
 % *** Load sleep scoring
 fileVIS = fullfile(pathVIS, nameVIS);        % Sleep scoring file

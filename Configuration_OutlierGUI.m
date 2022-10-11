@@ -8,9 +8,9 @@
 % *************************************************************************
 
 % *** General
-eeg_source = 'E:\Data\Preprocessed\Cutting\MAT\TV';
-scoring_source = 'E:\Data\Scoring\';
-destination = 'E:\Data\Outliers\TV';    % Specify where you want the data saved:
+eeg_source = 'E:\Data\Preprocessed\Cutting\MAT\Sleep';
+scoring_source = 'E:\Data\Scoring\Sleep';
+destination = 'E:\Data\Outliers\Sleep';    % Specify where you want the data saved:
 % destination = 'eeg';
                         % 'scoring': same folder as the sleep scoring
                         % 'eeg': same folder as the EEG data
@@ -37,7 +37,7 @@ chans_excl  = [49 56 107 113 126 127];
                         % automatically as "bad", so that all epochs are
                         % labeled as "bad" = 0. They will not appear in the
                         % artifact removal procedure.
-outlier_types = {'voltEEG', 'SWA', 'devEEG', 'BETA_RZ'};
+outlier_types = {'voltEEG', 'SWA', 'BETA_RZ'};
                         % Choose which features to clean, and in which
                         % order. Options include:
                         % 'devEEG': deviation from EEG.
@@ -46,7 +46,7 @@ outlier_types = {'voltEEG', 'SWA', 'devEEG', 'BETA_RZ'};
                         % 'BETA_RZ': robust z-scored beta power.
 
 % *** Sleep Scoring
-scoringlen = 5;        % The artifact rejection works on epoched data. 
+scoringlen = 20;        % The artifact rejection works on epoched data. 
                         % Define here how long those data segments should
                         % be. Usually it makes sense to choose the same
                         % epoch length as during sleep scoring (in case you
