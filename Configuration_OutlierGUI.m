@@ -31,7 +31,10 @@ altern_ref = [49 56];   % Alternative reference. With a button press in the
                         
 
 % *** Sleep Scoring
-scoringlen = 20;        % The artifact rejection works on epoched data. 
+scoringlen = 20;        % The length of sleep scored epochs. This variable 
+                        % will only be used when a sleep scoring file is
+                        % provided.
+epolen = 10;            % The artifact rejection works on epoched data. 
                         % Define here how long those data segments should
                         % be. Usually it makes sense to choose the same
                         % epoch length as during sleep scoring (in case you
@@ -39,7 +42,11 @@ scoringlen = 20;        % The artifact rejection works on epoched data.
                         % length of epochs is customizable. Beware though
                         % that spectral power will be computed in 4s
                         % snippets within one epoch with 50% epoch, so
-                        % preferably choose an even number greater than 4s.
+                        % preferably choose an even number greater than 4s. 
+                        % Also, the epoch length should be an even fraction
+                        % of the length of sleep scored epochs 
+                        % (good: e.g.: 30 s --> 30 s; or 30 s --> 10 s)
+                        % (bad: e.g.: 30 s --> 7 s)                        
 N1         = '-1';      % Non-rem sleep 1
 N2         = '-2';      % Non-rem sleep 2
 N3         = '-3';      % Non-rem sleep 3

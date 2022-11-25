@@ -167,6 +167,10 @@ if ~isempty(visnum)
     stages = cell2mat(stages); 
 end
 
+% *** Split sleep epochs if needed
+[visnum] = split_sleep_epochs(visnum, scoringlen, epolen);
+   
+
 
 % ### Load manual artifact rejection
 % #####################################
@@ -205,8 +209,7 @@ if ~isempty(visnum) & ~isempty(visgood)
     % In case manual artifact rejection was loaded in 
     stages_of_interest = intersect(visgood, vissleep);  
                                               % Clean sleep epochs 
-end
-                         
+end                      
 
 % ### Load EEG
 % ################
