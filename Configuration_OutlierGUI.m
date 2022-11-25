@@ -6,7 +6,7 @@
 % *************************************************************************
 
 % *** General
-chansID    = 1:64;     % The EEG data loaded in will be stored in a 
+chansID    = 1:64;      % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
                         % rejection on (the rows in your matrix). The 
@@ -22,6 +22,13 @@ chans_excl  = [];       % It makes sense to have an output matrix of the
                         % automatically as "bad", so that all epochs are
                         % labeled as "bad" = 0. They will not appear in the
                         % artifact removal procedure.
+altern_ref = [49 56];   % Alternative reference. With a button press in the
+                        % GUI, the EEG data can be re-referenced to these
+                        % channels. If several channels are indicated, the
+                        % EEG will be referenced to the mean of these 
+                        % channels. Only the visualization of the raw EEG
+                        % traces is affected by this.
+                        
 
 % *** Sleep Scoring
 scoringlen = 20;        % The artifact rejection works on epoched data. 

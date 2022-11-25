@@ -62,6 +62,7 @@ addParameter(p, 'epo_len', 20, @isnumeric)           % Length of epochs (in s)
 addParameter(p, 'main_title', 'Main plot', @ischar)  % Title of main plot
 addParameter(p, 'amp_ylabel', 'Amplitude', @ischar)  % Y label of EEG plot
 addParameter(p, 'main_ylabel', 'Values', @ischar)    % Frequency range for main plot title
+addParameter(p, 'altern_ref', [], @isnumeric)        % Alternative reference channels
 
 parse(p, varargin{:});
     
@@ -80,6 +81,7 @@ epo_len     = p.Results.epo_len;
 main_title  = p.Results.main_title;
 amp_ylabel  = p.Results.amp_ylabel;
 main_ylabel = p.Results.main_ylabel;
+altern_ref  = p.Results.altern_ref;
 
 % Preallocate
 cleandxnz = [];
@@ -235,6 +237,7 @@ handles.firstfilter     = 1;                    % Toggle whether EEG was filtere
 handles.chans_highlighted = [];                 % Highlights these channels in main plot
 handles.lpfilter        = [];                   % Initialize filter
 handles.hpfilter        = [];                   % Initialize filter
+handles.ref_toggle      = 0;                    % Toggle to re-reference
 
 % Channel outlier detection
 [handles.Y handles.topo handles.channel_outlier] = channel_outlier(handles.Y, handles.topo, epo_thresh);    
@@ -288,7 +291,7 @@ panelFILTER = uipanel(f, panelprops, ...
 
 % Distances (vertical and hortizontal)
 D01v = 0.13; D01h = 0.04;
-D02v = 0.18; D02h = 0.04;
+D02v = 0.15; D02h = 0.04;
 D03v = 0.22; D03h = 0.04;
 
 % Push buttons panel01 ("Figure manipulation")
@@ -329,25 +332,30 @@ uicontrol(panel01, UIprops, ...
 % Push buttons panel02 ("Plot functions")
 UIprops.fontsize  = 0.6;
 uicontrol(panel02, UIprops, ...
-    'string', 'EEG all channels [G]', ...
+    'string', 'Rereference EEG trace', ...
     'position', [panelbutton_left D02h+D02v*0 panelbutton_width D02v], ...
+    'callback', @cb_reference_toggle); 
+uicontrol(panel02, UIprops, ...
+    'string', 'EEG all channels [G]', ...
+    'position', [panelbutton_left D02h+D02v*1 panelbutton_width D02v], ...
     'callback', @cb_plotEEG_allchans); 
 uicontrol(panel02, UIprops, ...
     'string', 'EEG [T]', ...
-    'position', [panelbutton_left D02h+D02v*1 panelbutton_width D02v], ...
+    'position', [panelbutton_left D02h+D02v*2 panelbutton_width D02v], ...
     'callback', @cb_plotEEG); 
 uicontrol(panel02, UIprops, ...
     'string', 'Topo (epoch) [Z]', ...
-    'position', [panelbutton_left D02h+D02v*2 panelbutton_width D02v], ...
+    'position', [panelbutton_left D02h+D02v*3 panelbutton_width D02v], ...
     'callback', @cb_topo_brush); 
 uicontrol(panel02, UIprops, ...
     'string', 'Topo (night)', ...
-    'position', [panelbutton_left D02h+D02v*3 panelbutton_width D02v], ...
+    'position', [panelbutton_left D02h+D02v*4 panelbutton_width D02v], ...
     'callback', @cb_topo_night); 
 uicontrol(panel02, UIprops, ...
     'string', 'Topo (video)', ...
-    'position', [panelbutton_left D02h+D02v*4 panelbutton_width D02v], ...
+    'position', [panelbutton_left D02h+D02v*5 panelbutton_width D02v], ...
     'callback', @cb_topo_video); 
+
 
 % Other Push buttons
 UIprops.fontsize  = 0.5;
@@ -861,6 +869,91 @@ end
 
 % *** Plot EEG
 
+% Change the reference of filtered signal
+function cb_reference_toggle( src, event )
+
+    % Check if data was plotted
+    try get(handles.plotEEG, 'YData');
+    catch
+        return
+    end
+
+    % Change toggle
+    if handles.ref_toggle     
+        % Go back to original reference
+        handles.ref_toggle = 0;
+        isflip = -1;
+    else
+        % Re-reference to mastoids
+        handles.ref_toggle = 1;
+        isflip = 1;        
+    end
+
+    % EEG Data (plotted)
+    YNow   = get(handles.plotEEG, 'YData');  
+    YCh    = get(handles.plotEEG, 'DisplayName');
+    Ycolor = get(handles.plotEEG, 'Color');
+
+    % Make it a cell
+    if ~iscell(YNow)
+        YNow = {YNow}; end    
+    if ~iscell(YCh)
+        YCh = {YCh}; end   
+    if ~iscell(Ycolor)
+        Ycolor = {Ycolor}; end   
+
+    % Retrieve channels
+    legends = cellfun(@(x) regexp( x, '\d*', 'match'), YCh, 'Uni', 0);     
+    epos    = cellfun(@(x) str2num(x{2}), legends, 'Uni', 0);
+
+    % Update EEG Lines
+    for ichannel = 1:size(YNow, 1)
+        epo     = epos{ichannel};
+        color   = Ycolor{ichannel};
+        legend  = YCh{ichannel};
+
+        % Retrieve sample points
+        [xvec, eegndx] = xsamples(epo);
+
+        % re-reference data
+        yvec = YNow{ichannel} - mean(handles.EEG(altern_ref, eegndx), 1) * isflip;
+
+        % Adjust label
+        if isflip == 1
+            legend = [legend ' | re-referenced'];
+        else
+            legend = legend(1:end-16);
+        end
+        
+        % plot re-referenced data
+        % axes(s5);
+        % hold on; plot(xvec, yvec, '--', 'color', color); hold off;
+
+        % Re-reference existing data
+        set(handles.plotEEG(ichannel), 'YData', yvec, 'DisplayName', legend);
+    end
+
+    % Update handles
+    guidata(gcf, handles);     
+end
+
+function [X, XT] = xsamples(epo)
+    % This function takes an epoch and transforms it into indicies for the
+    % EEG data, as well as the x-vector for the EEG plot.
+
+    if epo == 1 
+        X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
+        XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
+    elseif epo == size(handles.Y, 2)
+        X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
+        XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+    else               
+        X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
+        XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
+    end    
+end
+
+
 function cb_plotEEG( src, event )
     % Callback:
     % Plot Brushed EEG Data
@@ -914,6 +1007,7 @@ function cb_plotEEG( src, event )
     end
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
+    handles.ref_toggle  = 0;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (selected epochs)');
@@ -991,6 +1085,7 @@ function cb_plotEEG_allchans( src, event )
     end
     handles.plotEEG = s5.Children;
     handles.firstfilter = 1;
+    handles.ref_toggle  = 0;
     xline([0 epo_len], 'k:', 'HandleVisibility','off')
     legend(); ylabel(amp_ylabel); xlabel('time (s)')
     title('EEG (selected epochs)')
