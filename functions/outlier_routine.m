@@ -23,6 +23,8 @@ function artndxn = outlier_routine(EEG, M, artndxn, visnum, T1, T2, T3, varargin
                                                 % sleep stages.
     chans_excl = p.Results.chans_excl;          % Those channels will be 
                                                 % set to 0 automatically
+    altern_ref = p.Results.altern_ref;          % Alternative reference 
+                                                % channels used in the GUI                                               
                                                 
     % Robust z-standardization of EEG
     fprintf('Preparing GUI ...\n')
