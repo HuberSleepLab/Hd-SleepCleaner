@@ -37,36 +37,36 @@ function M = compute_marker(EEG, scoringlen, stages_of_interest, artndxn, chans_
     end
 
     % Robust z-standardization of EEG
-    fprintf('Robustly Z-Standardize EEG ...\n')
-    EEG_RZ = ( EEG.data - median(EEG.data, 2) ) ./ (prctile(EEG.data, 75, 2) - prctile(EEG.data, 25, 2));
+    %fprintf('Robustly Z-Standardize EEG ...\n')
+    %EEG_RZ = ( EEG.data - median(EEG.data, 2) ) ./ (prctile(EEG.data, 75, 2) - prctile(EEG.data, 25, 2));
 
     % Compute PSD
     fprintf('Compute PSD ...\n')    
     [FFTtot, freq] = pwelchEPO(EEG.data, EEG.srate, scoringlen);
 
     % Compute PSD (Robustly z-standardized EEG)
-    fprintf('Compute PSD (Robustly z-standardized EEG) ...\n')    
-    [FFTtot_RZ, freq] = pwelchEPO(EEG_RZ, EEG.srate, scoringlen);        
+    %fprintf('Compute PSD (Robustly z-standardized EEG) ...\n')    
+    %[FFTtot_RZ, freq] = pwelchEPO(EEG_RZ, EEG.srate, scoringlen);        
 
     % Compute SWA
     SWA     = select_band(FFTtot, freq, L1, L2, stages_of_interest, artndxn, chans_excl);
-    SWA_RZ  = select_band(FFTtot_RZ, freq, L1, L2, stages_of_interest, artndxn, chans_excl);    
+    %SWA_RZ  = select_band(FFTtot_RZ, freq, L1, L2, stages_of_interest, artndxn, chans_excl);    
 
     % Compute BETA
     BETA    = select_band(FFTtot, freq, H1, H2, stages_of_interest, artndxn, chans_excl);        
-    BETA_RZ = select_band(FFTtot_RZ, freq, H1, H2, stages_of_interest, artndxn, chans_excl);    
+    %BETA_RZ = select_band(FFTtot_RZ, freq, H1, H2, stages_of_interest, artndxn, chans_excl);    
     
     % How much channel deviate from mean
-    devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);   
+    %devEEG = deviationEEG(EEG.data, EEG.srate, scoringlen, artndxn, chans_excl);   
 
     % Assign to output structure
     M.FFTtot    = single(FFTtot);
-    M.FFTtot_RZ = single(FFTtot_RZ);
+    %M.FFTtot_RZ = single(FFTtot_RZ);
     M.SWA       = single(SWA);
-    M.SWA_RZ    = single(SWA_RZ);
+    %M.SWA_RZ    = single(SWA_RZ);
     M.BETA      = single(BETA);
-    M.BETA_RZ   = single(BETA_RZ);
-    M.devEEG    = single(devEEG);
+    %M.BETA_RZ   = single(BETA_RZ);
+    %M.devEEG    = single(devEEG);
     M.freq      = single(freq);
     M.L1        = single(L1);    
     M.L2        = single(L2);    
