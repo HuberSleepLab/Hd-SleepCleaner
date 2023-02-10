@@ -25,6 +25,7 @@ filelist = filelist(~contains({filelist.folder}, "RESULTS"));%remove RESULTS fol
 filelist = filelist(~contains({filelist.folder}, "PREPROCESS"));%remove PREPROCESS folders from list
 filelist = filelist(~contains({filelist.folder}, "Quality"));%remove Quality folders from list
 filelist = filelist(~contains({filelist.folder}, "multiple"));%remove multiple folders from list
+filelist(contains({filelist.name}, {'EEGstruct_singlechan.mat', 'EEGstruct_singlechan_artndxn.mat'})) = []; 
 %only left with the sleep-eeg.mat 
 
 % filelist = dir(fullfile(maineeg, "**\*"));
@@ -48,12 +49,17 @@ hypno_filelist = dir(fullfile(mainh, "**\*.txt"));
 %% --- generate EEGlab structure
 %generate EEGlab structure from EEG files
 for i = 1:length(filelist)
-    EEGstruct = load(fullfile(filelist(i).folder,filelist(i).name));
-    EEG = makeEEG(EEGstruct.M_VAL(:,2)', srate); %include also first eye channel
     newname = strsplit(filelist(i).name, ".");
-    cd(filelist(i).folder)
-    save(newname{1,1} + "_EEGstruct_singlechan.mat", 'EEG');
-    fprintf("\nEEG file %s converted to struct", filelist(i).name);
+    %check if file already exists
+    if ~exist(newname{1,1} + "_EEGstruct_singlechan.mat", 'file')
+        EEGstruct = load(fullfile(filelist(i).folder,filelist(i).name));
+        EEG = makeEEG(EEGstruct.M_VAL(:,2)', srate); %include also first eye channel
+        cd(filelist(i).folder)
+        save(newname{1,1} + "_EEGstruct_singlechan.mat", 'EEG');
+        fprintf("\nEEG file %s converted to struct", filelist(i).name);
+    else
+         fprintf("\nEEG file %s has already been converted earlier", filelist(i).name);
+    end
 end
 
 %% --- generate hypnogram epoch matrices
