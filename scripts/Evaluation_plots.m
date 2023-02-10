@@ -9,6 +9,14 @@ SWA02  = select_band(M1.FFTtot, M1.freq, L1, L2, stages_of_interest, artndxn, ch
 SWA01x = mean(SWA01, 2, 'omitnan');
 SWA02x = mean(SWA02, 2, 'omitnan');
 
+% Compute BETA
+BETA01  = select_band(M1.FFTtot, M1.freq, H1, H2, stages_of_interest, [], chans_excl);         % Before artifact rejection
+BETA02  = select_band(M1.FFTtot, M1.freq, H1, H2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
+
+% Compute averages
+BETA01x = mean(BETA01, 2, 'omitnan');
+BETA02x = mean(BETA02, 2, 'omitnan');
+
 if EEG.nbchan > 2
     SWA03  = select_band(M2.FFTtot, M2.freq, L1, L2, stages_of_interest, artndxn, chans_excl);    % After artifact rejection
     SWA03x = mean(SWA03, 2, 'omitnan');    
@@ -89,10 +97,19 @@ if EEG.nbchan > 2
     set(gca, 'Position', p1);   
     ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', L1, L2, 956))
     title(sprintf('Clean, average ref'))
+else
+    %Beta plot pre
+    subplot('Position', [0.1 0.68 width height ]);
+    plot(BETA01', 'k.:')
+    ylabel(sprintf('Power (%.1f - %.1f Hz, %cV^2)', H1, H2, 956))
+
+    %Beta plot post
+    subplot('Position', [0.1 0.38 width height ]);
+    plot(BETA02', 'k.:')
 end
 
 % *** Clean sleep epochs after manual artifact rejection
-cleanThresh     = .97;
+cleanThresh     = .90;
 exclChans       = [];
 
 % Percentage of clean sleep epochs after semi-automatic artifact remoal
@@ -112,7 +129,9 @@ prcnt_epolow(prcnt_epolow >= cleanThresh)                       = nan;
 prcnt_epoexcl(setdiff(1:size(prcnt_cleanEPO, 1), exclChans), :) = nan;     
     
 % Plot bars
-subplot('Position', [0.73 0.08 width 0.85 ]);
+%subplot('Position', [0.73 0.08 width 0.85 ]);
+subplot('Position', [0.73 0.38 width 0.55 ]);
+
 barh(prcnt_cleanEPO, 'DisplayName', 'Good channels'); hold on;
 barh(prcnt_epoexcl, 'FaceColor', uint8([200 200 200]), 'DisplayName', 'Excl. channels');
 barh(prcnt_epolow, 'r', 'DisplayName', 'Bad channels');
