@@ -134,7 +134,7 @@ screen_size = get(0 , 'ScreenSize');    % Screen size
 fontsize    = screen_size(4)*0.009;      % Font size equal to 0.9% of screen height
 
 % Open figure
-f = figure('color', 'w', ...
+f = uifigure('color', 'w', ...
     'defaultAxesFontSize', fontsize, ...
     'defaultTextFontSize', fontsize);
 
@@ -294,12 +294,25 @@ D01v = 0.13; D01h = 0.04;
 D02v = 0.15; D02h = 0.04;
 D03v = 0.22; D03h = 0.04;
 
-% Push buttons panel01 ("Figure manipulation")
-uicontrol(f, UIprops, ...
-    'string', 'Done', ...
-    'position', [button_left_small+button_width_small/6 0.06 button_width_small button_height_small], ...
-    'BackgroundColor', [0 0.4470 0.7410], ...    
-    'callback', @cb_done);  
+% *************************************************************************
+% *** Push buttons on the left panel
+
+% Done button
+button_props.Text = 'Done';
+% button_props.Position = [button_left_small+button_width_small/6 0.06 button_width_small button_height_small];
+button_props.ButtonPushedFcn = @cb_done;
+button_props.BackgroundColor = [0 0.4470 0.7410];
+button_props.Tag = 'Done button';
+uibutton(f, button_props)
+
+% Panel 01
+button_props.Text = '[R] Remove data points';
+% button_props.Position = [panelbutton_left D01h+D01v*6 panelbutton_width D01v];
+button_props.ButtonPushedFcn = @cb_done;
+button_props.BackgroundColor = [0 0 0];
+button_props.Tag = 'Remove data button';
+uibutton(panel01, button_props)
+
 uicontrol(panel01, UIprops, ...
     'string', 'Remove datapoint [R]', ...
     'position', [panelbutton_left D01h+D01v*6 panelbutton_width D01v], ...
