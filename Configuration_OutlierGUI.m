@@ -93,7 +93,7 @@ H2 = 30;                % Higher band: upper limit
 
 
 % *** Preprocessing
-is_preprocessing = 1;   % Toggle whether you want to preprocess your EEG 
+is_preprocessing = 0;   % Toggle whether you want to preprocess your EEG 
                         % before artifact correction. This low- and
                         % high-pass filters your data (pass-band: 0.5 - 30 
                         % Hz) and down-samples it to a lower sampling rate. 
@@ -133,6 +133,10 @@ destination = 'eeg';    % Specify where you want the final output saved.
                         % Any other string will be interpreted as a
                         % filepath.
 
+%Additional config for loading data from script
+isscoring = 0; %use scoring file or not
+isartman = 0; %use manual artifact rejection results or not
+isartdxn = 0; %load pre-existing artdxn results file
 
 % *** Add helper functions
 addpath(genpath(fullfile(pmain, 'chanlocs')));   % Path to channel locations
