@@ -50,3 +50,5 @@ Thumbs.db
 
 # MATLAB things
 *.asv
+
+Configuration_OutlierGUI.m

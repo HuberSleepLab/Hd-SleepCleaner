@@ -1,19 +1,20 @@
 % Configuration file for "Call_OutlierGUI".
-%
-% Change variables and paths in this script to your desired settings.
+% Make a local copy renaming the file as Configuration_OutlierGUI.m
+% and adapt it acording to your personal desired settings (Note, the 
+% Configuration_OutlierGUI.m file is not trackt on GitHub)
 % Thereafter, call the script "Call_OutlierGUI".
 %
 % *************************************************************************
 
 % *** General
-chansID    = 1:64;      % The EEG data loaded in will be stored in a 
+chansID    = 1:128;      % The EEG data loaded in will be stored in a 
                         % matrix (channels x samples). Define here which
                         % channels you want to perform the artifact
                         % rejection on (the rows in your matrix). The 
                         % number of chosen channels will also determine the
                         % size of your output matrix (number of channels =
                         % number of rows).
-chans_excl  = [];       % It makes sense to have an output matrix of the
+chans_excl  = [107 113];       % It makes sense to have an output matrix of the
                         % same size as your EEG data matrix. However, you
                         % can still have channels you want to exclude from
                         % artifact rejection, because they do not capture
@@ -31,10 +32,10 @@ altern_ref = [49 56];   % Alternative reference. With a button press in the
                         
 
 % *** Sleep Scoring
-scoringlen = 20;        % The length of sleep scored epochs. This variable 
+scoringlen = 30;        % The length of sleep scored epochs. This variable 
                         % will only be used when a sleep scoring file is
                         % provided.
-epolen = 10;            % The artifact rejection works on epoched data. 
+epolen = 30;            % The artifact rejection works on epoched data. 
                         % Define here how long those data segments should
                         % be. Usually it makes sense to choose the same
                         % epoch length as during sleep scoring (in case you
@@ -78,16 +79,16 @@ num_header = 0;         % Only for when your scoring file is stored as a
                         % contain other explanations, indicate how many
                         % header lines your file contains. Those will be
                         % skipped when loading in your scoring file.
-lookup_eeg = '';        % Define folder to which Matlab points to by 
+lookup_eeg = 'I:\Sara\Studies\EPISL\Pilot\Data\Scoring\scoring\test';        % Define folder to which Matlab points to by 
                         % default when displaying the pop-up to load in the
                         % EEG data. In case it stays empty, it points to
                         % the "example_data" folder of the repository.
-lookup_scoring = '';    % Same for sleep scoring file.         
+lookup_scoring = 'I:\Sara\Studies\EPISL\Pilot\Data\Scoring\scoring\test';    % Same for sleep scoring file.         
 lookup_artndxn = '';    % Same for sartifact rejection file.                        
 
 
 % *** Manual artifact rejection
-manual = [];            % In case you have identified artifacts in advance
+manual = [1];            % In case you have identified artifacts in advance
                         % in one or few channels, e.g. during sleep
                         % scoring, you can load in another file that stores
                         % this information. This file needs to be a vector
@@ -129,12 +130,12 @@ is_sweat = 0;           % Toggle whether you want to apply a stricter high-
 
 
 % *** Filenames
-fname_chanlocs = 'locs64.loc'; % File storing channel locations.
+fname_chanlocs = 'locs128.loc'; % File storing channel locations.
                                 % The repository uses the location
                                 % of a 129 channel EGI net.
 
 % *** EEGLAB path
-pname_eeglab = 'C:\PhDScripts\EEGlab2021.1';
+pname_eeglab = 'D:\Sara\Matlab\backup_Git\GitHub\toolboxes\eeglab_current\eeglab2021.1';
                         % Path to EEGLAB toolbox. This is a free toolbox 
                         % functions of which are used in this GUI. Can be 
                         % downloaded here: https://eeglab.org/download/
