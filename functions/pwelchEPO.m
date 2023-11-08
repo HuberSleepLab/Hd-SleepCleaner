@@ -25,7 +25,7 @@ for epo = 1:nEpo20
     to               = (epo-1)*winlen*srate+winlen*srate;
 
     % pwelch
-    [FFTepoch, freq] = pwelch(EEG(:, from:to)', hanning(4*srate), 2*srate, 4*srate, srate);
+    [FFTepoch, freq] = pwelch(EEG(:, from:to)', tukeywin(4*srate), 2*srate, 4*srate, srate);
     FFTepoch         = FFTepoch'; % to get channel x frequency
 
     % frequencies of interest
