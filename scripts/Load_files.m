@@ -121,7 +121,7 @@ elseif endsWith(fileVIS, '.json')
     % .vis files
 %     [vistrack, vissymb, offs] = visfun.readtrac(fileVIS, 1);     % Load manual artifact rejection
 %     visnum                    = visfun.numvis(vissymb, offs);    % Load sleep scoring
-    [visnum, vistrack] = read_json_fromSH (fileVIS);
+    [visnum, vistrack] = read_json_fromSH(fileVIS);
     fprintf('** Load %s\n', nameVIS)
 
 
