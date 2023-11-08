@@ -34,7 +34,7 @@ altern_ref = [49 56];   % Alternative reference. With a button press in the
 scoringlen = 30;        % The length of sleep scored epochs. This variable 
                         % will only be used when a sleep scoring file is
                         % provided.
-epolen = 10;            % The artifact rejection works on epoched data. 
+epolen = 30;            % The artifact rejection works on epoched data. 
                         % Define here how long those data segments should
                         % be. Usually it makes sense to choose the same
                         % epoch length as during sleep scoring (in case you
