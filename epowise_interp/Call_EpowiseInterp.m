@@ -64,6 +64,7 @@ function [EEG, artintp] = Call_EpowiseInterp(EEG, artndxn, stages, varargin)
     % Input parser
     p = inputParser;
     addParameter(p, 'plotFlag', 0, @isnumeric) % Do you want a plot?
+    addParameter(p, 'displayFlag', 1, @isnumeric) % Do you want a plot interpolated data?
     addParameter(p, 'stagesOfInterest', [-2 -3], @isnumeric) % Sleep stages to perform analysis on   
     addParameter(p, 'N1', -1, @isnumeric) % N1 as coded in sleep stages
     addParameter(p, 'N2', -2, @isnumeric) % N2 as coded in sleep stages
@@ -91,7 +92,7 @@ function [EEG, artintp] = Call_EpowiseInterp(EEG, artndxn, stages, varargin)
     % Interpolate EEG
     EEG = epowise_interp(EEG, intp, ...
         'epolen', scoringlen, ...
-        'displayFlag', 1);
+        'displayFlag', displayFlag);
 
     % Find clean and lost epochs
     epo = epo_assign(artndxn, stages, ...
