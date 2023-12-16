@@ -50,10 +50,12 @@ if isempty(lookup_scoring)
 end
 
 % Grab sleep scoring
-[nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.txt','Scoring file (*.mat, *.vis, *.txt)'}, ...
+[nameVIS, pathVIS]  = uigetfile({'*.mat;*.vis;*.json;*.txt','Scoring file (*.mat, *.vis, *.json, *.txt)'}, ...
     'Select file containing sleep scoring', ...
     fullfile(lookup_scoring, 'Select file containing sleep scoring'), ...    
     'MultiSelect', 'off');
+
+
 
 % Point to this folder
 if isempty(lookup_artndxn)
@@ -68,7 +70,7 @@ end
 
 % Grab manual artifact rejection during sleep scoring
 if ~isempty(manual)
-    [nameMAN, pathMAN]  = uigetfile({'*.mat','Manual artifact rejection file (*.mat)'}, ...
+    [nameMAN, pathMAN]  = uigetfile({'*.mat; *.json','Manual artifact rejection file (*.mat, *.json)'}, ...
         'Manual artifact rejection', ...
         fullfile(lookup_eeg, 'Select file containing manual artifact rejection, cancel otherwise'), ...
         'MultiSelect', 'off');
@@ -113,6 +115,15 @@ elseif endsWith(fileVIS, '.vis')
     [vistrack, vissymb, offs] = visfun.readtrac(fileVIS, 1);     % Load manual artifact rejection
     visnum                    = visfun.numvis(vissymb, offs);    % Load sleep scoring
     fprintf('** Load %s\n', nameVIS)
+
+
+elseif endsWith(fileVIS, '.json')
+    % .vis files
+%     [vistrack, vissymb, offs] = visfun.readtrac(fileVIS, 1);     % Load manual artifact rejection
+%     visnum                    = visfun.numvis(vissymb, offs);    % Load sleep scoring
+    [visnum, vistrack] = read_json_fromSH(fileVIS);
+    fprintf('** Load %s\n', nameVIS)
+
 
 elseif endsWith(fileVIS, '.txt')
     % .txt files
@@ -187,10 +198,16 @@ if endsWith(fileMAN, '.mat')
             visgood     = visgood.(fn_visgood{1});% Access first subfield
         end
     end    
-    fprintf('** Load %s\n', nameMAN)    
+    fprintf('** Load %s\n', nameMAN)   
+    
 elseif endsWith(fileVIS, '.vis')
     %. vis file
-    visgood = find(sum(vistrack') == manual); % Manual artifact detection     
+    visgood = find(sum(vistrack') == manual); % Manual artifact detection
+
+elseif endsWith(fileVIS, '.json')
+    %. vis file
+    visgood = find(vistrack == manual); % Manual artifact detection  
+   
 else
     visgood = [];   % No manual artifact detection
 end
