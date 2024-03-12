@@ -9,4 +9,10 @@ function [visnum, vistrack] = read_json_fromSH(fname)
 
     visnum      = [scoring_data{1}.digit];
     vistrack    = [scoring_data{1}.clean];
+
+    if any(cellfun(@isempty, {scoring_data{1}.digit}))
+        fprintf('Epoch %d not scored\n', find(cellfun(@isempty, {scoring_data{1}.digit})))
+        error('not all epochs are scored')
+    end
+
 end
