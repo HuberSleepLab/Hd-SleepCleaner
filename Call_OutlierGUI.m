@@ -64,7 +64,7 @@ artndxn = outlier_routine(EEG, M1, artndxn, visnum, 8, 10, 8, ...
 if EEG.nbchan > 1
 
     % Set artifacts to nan and then average reference
-    [EEG.data] = prep_avgref(EEG.data, EEG.srate, chansID, epolen, artndxn);
+    [EEG.data] = prep_avgref(EEG.data, EEG.srate, chansID, epolen, artndxn, chansAvgRef);
     
     % Compute marker (median reference)
     [M2] = compute_marker(EEG, epolen, stages_of_interest, artndxn, chans_excl, ...

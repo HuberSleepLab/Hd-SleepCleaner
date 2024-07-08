@@ -1,4 +1,4 @@
-function [EEG] = prep_avgref(EEG, srate, chansID, winlen, artndxn)
+function [EEG] = prep_avgref(EEG, srate, chansID, winlen, artndxn, chansAvgRef)
 
 % define variables and pre-allocate
 nChan     = size(EEG,1);                            % channels
@@ -26,8 +26,7 @@ for epo = 1:nEpo20
 end  
 
 % Average reference
-chansAVG = setdiff(chansID, [49 56 107 113, 125, 126, 127, 128, 48, 119, 43, 63, 68, 73, 81, 88, 94, 99, 120]);
-EEG      = EEG - mean(EEG(chansAVG, :), 1, 'omitnan');
+EEG = EEG - mean(EEG(chansAvgRef, :), 1, 'omitnan');
 
 % Insert values again
 for epo = 1:nEpo20
