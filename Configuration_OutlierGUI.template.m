@@ -29,6 +29,12 @@ altern_ref = [49 56];   % Alternative reference. With a button press in the
                         % EEG will be referenced to the mean of these 
                         % channels. Only the visualization of the raw EEG
                         % traces is affected by this.
+chansAvgRef = setdiff(chansID, [49 56 107 113, 125, 126, 127, 128, 48, 119, 43, 63, 68, 73, 81, 88, 94, 99, 120]); 
+                       % Channels used for computing the average reference. 
+% Depending on your electrode setup, it may be sensible to exclude specific 
+% channels that record EMG rather than EEG. Channels prone to artifacts 
+% can also be excluded to prevent them from influencing the average reference.
+
                         
 
 % *** Sleep Scoring
