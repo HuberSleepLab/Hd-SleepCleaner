@@ -941,12 +941,12 @@ function [X, XT] = xsamples(epo)
     % This function takes an epoch and transforms it into indicies for the
     % EEG data, as well as the x-vector for the EEG plot.
 
-    if epo == 1 
-        X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
-        XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
-    elseif epo == size(handles.Y, 2)
-        X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
-        XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+    if (epo-1) * epo_len < 10  
+        X    = linspace((epo-1) * epo_len * -1, (epo_len+10), (epo * epo_len+10)*handles.srate);
+        XT   = epo * epo_len * handles.srate - handles.srate * epo_len + (epo-1) * epo_len : epo * epo_len * handles.srate + 10 * handles.srate;                   ;                   
+    elseif (size(handles.Y, 2) - epo) * epo_len < 10   
+        X    = linspace(-10, (size(handles.Y, 2) - epo) * epo_len + epo_len, ((size(handles.Y, 2) - (epo-1)) * epo_len+10)*handles.srate);  
+        XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + ((size(handles.Y, 2) - epo) * epo_len) * handles.srate;                   
     else               
         X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
         XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
@@ -986,12 +986,12 @@ function cb_plotEEG( src, event )
     for ch = 1:numel(brushNDX2)
         epos = brushNDX2{ch};
         for epo = epos
-            if epo == 1 
-                X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
-            elseif epo == size(handles.Y, 2)
-                X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
-                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+            if (epo-1) * epo_len < 10  
+                X    = linspace((epo-1) * epo_len * -1, (epo_len+10), (epo * epo_len+10)*handles.srate);
+                XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 - (epo-1)  * epo_len * handles.srate : epo * epo_len * handles.srate + 10 * handles.srate;                   ;                   
+            elseif (size(handles.Y, 2) - epo) * epo_len < 10   
+                X    = linspace(-10, (size(handles.Y, 2) - epo) * epo_len + epo_len, ((size(handles.Y, 2) - (epo-1)) * epo_len+10)*handles.srate);  
+                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + ((size(handles.Y, 2) - epo) * epo_len) * handles.srate;                   
             else               
                 X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
                 XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
@@ -1066,12 +1066,12 @@ function cb_plotEEG_allchans( src, event )
     for ch = 1:size(handles.Y, 1)
         for epo = epos
             if ~isnan(handles.Y(ch, epo))
-                if epo == 1 
-                    X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
-                    XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
-                elseif epo == size(handles.Y, 2)
-                    X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
-                    XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+                if (epo-1) * epo_len < 10  
+                    X    = linspace((epo-1) * epo_len * -1, (epo_len+10), (epo * epo_len+10)*handles.srate);
+                    XT   = epo * epo_len * handles.srate - handles.srate * epo_len + (epo-1) * epo_len : epo * epo_len * handles.srate + 10 * handles.srate;                                   
+                elseif (size(handles.Y, 2) - epo) * epo_len < 10   
+                    X    = linspace(-10, (size(handles.Y, 2) - epo) * epo_len + epo_len, ((size(handles.Y, 2) - (epo-1)) * epo_len+10)*handles.srate);  
+                    XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + ((size(handles.Y, 2) - epo) * epo_len) * handles.srate;                   
                 else               
                     X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
                     XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
@@ -1129,12 +1129,12 @@ function cb_eeg_chans( src, event )
     handles.plotEEG = [];    
     for ch = chans
         for epo = epos
-            if epo == 1 
-                X    = linspace(0, (epo_len+10), (epo_len+10)*handles.srate);
-                XT   = epo * epo_len * handles.srate - handles.srate * epo_len + 1 : epo * epo_len * handles.srate + 10 * handles.srate;                   
-            elseif epo == size(handles.Y, 2)
-                X    = linspace(-10, epo_len, (epo_len+10)*handles.srate);  
-                XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 0 * handles.srate;                   
+            if (epo-1) * epo_len < 10  
+                X    = linspace((epo-1) * epo_len * -1, (epo_len+10), (epo * epo_len+10)*handles.srate);
+                XT   = epo * epo_len * handles.srate - handles.srate * epo_len + (epo-1) * epo_len : epo * epo_len * handles.srate + 10 * handles.srate;                   ;                   
+            elseif (size(handles.Y, 2) - epo) * epo_len < 10   
+                    X    = linspace(-10, (size(handles.Y, 2) - epo) * epo_len + epo_len, ((size(handles.Y, 2) - (epo-1)) * epo_len+10)*handles.srate);  
+                    XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + ((size(handles.Y, 2) - epo) * epo_len) * handles.srate;                   
             else               
                 X    = linspace(-10, (epo_len+10), (epo_len+20)*handles.srate);
                 XT   = epo * epo_len * handles.srate - handles.srate * (epo_len+10) + 1 : epo * epo_len * handles.srate + 10 * handles.srate;   
