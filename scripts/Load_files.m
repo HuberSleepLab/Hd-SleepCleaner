@@ -206,8 +206,11 @@ elseif endsWith(fileVIS, '.vis')
 
 elseif endsWith(fileVIS, '.json')
     %. vis file
-    visgood = find(vistrack == manual); % Manual artifact detection  
-   
+    if ~isempty(manual)
+        visgood = find(vistrack == manual); % Manual artifact detection 
+    else
+        visgood = [];
+    end
 else
     visgood = [];   % No manual artifact detection
 end
